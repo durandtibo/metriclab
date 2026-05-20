@@ -1,0 +1,64 @@
+# Cyclic import detection workflow.
+# Tests that the package can be imported without circular dependencies.
+# Validates key modules and submodules can be imported successfully.
+
+name: Cyclic Imports
+on:
+  workflow_call:
+  workflow_dispatch:  # to trigger manually
+
+permissions:
+  contents: read
+
+jobs:
+  cyclic-imports:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup python environment
+        uses: durandtibo/setup-venv-uv-action@v0.0.3
+
+      # Test main module imports to detect circular dependencies
+      - name: check metriclab
+        run: |
+          python -c "import metriclab"
+
+      # Test functional module imports
+      - name: check metriclab.functional
+        run: |
+          python -c "from metriclab import functional"
+      - name: check metriclab.functional.array
+        run: |
+          python -c "from metriclab.functional import array"
+      - name: check metriclab.functional.frame
+        run: |
+          python -c "from metriclab.functional import frame"
+
+      # Test metrics module imports
+      - name: check metriclab.metrics
+        run: |
+          python -c "from metriclab import metrics"
+      - name: check metriclab.metrics.array
+        run: |
+          python -c "from metriclab.metrics import array"
+      - name: check metriclab.metrics.frame
+        run: |
+          python -c "from metriclab.metrics import frame"
+
+      # Test result module imports
+      - name: check metriclab.results
+        run: |
+          python -c "from metriclab import results"
+
+      # Test testing module imports
+      - name: check metriclab.testing
+        run: |
+          python -c "from metriclab import testing"
+
+      # Test utils module imports
+      - name: check metriclab.utils
+        run: |
+          python -c "from metriclab import utils"
