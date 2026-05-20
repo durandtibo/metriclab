@@ -155,6 +155,49 @@ def test_result_allclose_numpy_arrays() -> None:
     )
 
 
+# --- from_dict ---
+
+# --- from_dict ---
+
+
+def test_result_from_dict_standard() -> None:
+    assert Result.from_dict({"accuracy": 0.9, "loss": 0.1}).equal(
+        Result(results={"accuracy": 0.9, "loss": 0.1})
+    )
+
+
+def test_result_from_dict_empty() -> None:
+    assert Result.from_dict({}).equal(Result(results={}))
+
+
+def test_result_from_dict_single_key() -> None:
+    assert Result.from_dict({"accuracy": 0.9}).equal(Result(results={"accuracy": 0.9}))
+
+
+def test_result_from_dict_preserves_types() -> None:
+    r = Result.from_dict({"arr": np.array([1, 2, 3]), "val": 0.5, "name": "model"})
+    assert objects_are_equal(r.results["arr"], np.array([1, 2, 3]))
+    assert objects_are_equal(r.results["val"], 0.5)
+    assert objects_are_equal(r.results["name"], "model")
+
+
+def test_result_from_dict_nan_value() -> None:
+    assert objects_are_equal(
+        Result.from_dict({"x": float("nan"), "y": 1.0}).results,
+        {"x": float("nan"), "y": 1.0},
+        equal_nan=True,
+    )
+
+
+def test_result_from_dict_returns_result_instance() -> None:
+    assert isinstance(Result.from_dict({"accuracy": 0.9}), Result)
+
+
+def test_result_from_dict_to_dict_roundtrip() -> None:
+    data = {"accuracy": 0.9, "loss": 0.1}
+    assert objects_are_equal(Result.from_dict(data).to_dict(), data)
+
+
 # --- to_dict ---
 
 
