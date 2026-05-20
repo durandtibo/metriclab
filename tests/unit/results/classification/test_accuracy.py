@@ -81,43 +81,6 @@ def test_accuracy_result_accuracy_num_correct_predictions_is_nan() -> None:
     )
 
 
-def test_accuracy_result_combine() -> None:
-    result = AccuracyResult(num_correct_predictions=7, num_predictions=10).combine(
-        AccuracyResult(num_correct_predictions=3, num_predictions=5)
-    )
-    assert result.equal(AccuracyResult(num_correct_predictions=10, num_predictions=15))
-
-
-def test_accuracy_result_combine_empty() -> None:
-    result = AccuracyResult(num_correct_predictions=7, num_predictions=10).combine(
-        AccuracyResult(num_correct_predictions=0, num_predictions=0)
-    )
-    assert result.equal(AccuracyResult(num_correct_predictions=7, num_predictions=10))
-
-
-def test_accuracy_result_combine_nan() -> None:
-    result = AccuracyResult(num_correct_predictions=7, num_predictions=10).combine(
-        AccuracyResult(num_correct_predictions=float("nan"), num_predictions=5)
-    )
-    assert result.equal(
-        AccuracyResult(num_correct_predictions=float("nan"), num_predictions=15), equal_nan=True
-    )
-
-
-def test_accuracy_result_combine_returns_new_object() -> None:
-    original = AccuracyResult(num_correct_predictions=7, num_predictions=10)
-    combined = original.combine(AccuracyResult(num_correct_predictions=3, num_predictions=5))
-    assert combined is not original
-    assert original.equal(AccuracyResult(num_correct_predictions=7, num_predictions=10))
-    assert combined.equal(AccuracyResult(num_correct_predictions=10, num_predictions=15))
-
-
-def test_accuracy_result_combine_incorrect_object() -> None:
-    result = AccuracyResult(num_correct_predictions=7, num_predictions=10)
-    with pytest.raises(TypeError, match="Cannot combine AccuracyResult with"):
-        result.combine({"num_correct_predictions": 0, "num_predictions": 0})
-
-
 def test_accuracy_result_allclose_true() -> None:
     assert AccuracyResult(num_correct_predictions=7, num_predictions=10).allclose(
         AccuracyResult(num_correct_predictions=7, num_predictions=10)
@@ -294,6 +257,43 @@ def test_accuracy_result_to_display_nan() -> None:
     assert AccuracyResult(
         num_correct_predictions=float("nan"), num_predictions=10
     ).to_display() == ("AccuracyResult: unknown number of correct predictions")
+
+
+def test_accuracy_result_combine() -> None:
+    result = AccuracyResult(num_correct_predictions=7, num_predictions=10).combine(
+        AccuracyResult(num_correct_predictions=3, num_predictions=5)
+    )
+    assert result.equal(AccuracyResult(num_correct_predictions=10, num_predictions=15))
+
+
+def test_accuracy_result_combine_empty() -> None:
+    result = AccuracyResult(num_correct_predictions=7, num_predictions=10).combine(
+        AccuracyResult(num_correct_predictions=0, num_predictions=0)
+    )
+    assert result.equal(AccuracyResult(num_correct_predictions=7, num_predictions=10))
+
+
+def test_accuracy_result_combine_nan() -> None:
+    result = AccuracyResult(num_correct_predictions=7, num_predictions=10).combine(
+        AccuracyResult(num_correct_predictions=float("nan"), num_predictions=5)
+    )
+    assert result.equal(
+        AccuracyResult(num_correct_predictions=float("nan"), num_predictions=15), equal_nan=True
+    )
+
+
+def test_accuracy_result_combine_returns_new_object() -> None:
+    original = AccuracyResult(num_correct_predictions=7, num_predictions=10)
+    combined = original.combine(AccuracyResult(num_correct_predictions=3, num_predictions=5))
+    assert combined is not original
+    assert original.equal(AccuracyResult(num_correct_predictions=7, num_predictions=10))
+    assert combined.equal(AccuracyResult(num_correct_predictions=10, num_predictions=15))
+
+
+def test_accuracy_result_combine_incorrect_object() -> None:
+    result = AccuracyResult(num_correct_predictions=7, num_predictions=10)
+    with pytest.raises(TypeError, match="Cannot combine AccuracyResult with"):
+        result.combine({"num_correct_predictions": 0, "num_predictions": 0})
 
 
 ######################################
