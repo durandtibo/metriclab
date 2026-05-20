@@ -15,7 +15,7 @@ class BaseResult(ABC):
 
     Example:
         ```pycon
-        >>> from mlev.results import AccuracyResult
+        >>> from metriclab.results import AccuracyResult
         >>> m = AccuracyResult(num_correct_predictions=7, num_predictions=10)
         >>> m
         AccuracyResult(num_correct_predictions=7, num_predictions=10)
@@ -49,7 +49,7 @@ class BaseResult(ABC):
 
         Example:
             ```pycon
-            >>> from mlev.results import AccuracyResult
+            >>> from metriclab.results import AccuracyResult
             >>> m1 = AccuracyResult(num_correct_predictions=7, num_predictions=10)
             >>> m2 = AccuracyResult(num_correct_predictions=7, num_predictions=10)
             >>> m3 = AccuracyResult(num_correct_predictions=5, num_predictions=10)
@@ -75,7 +75,7 @@ class BaseResult(ABC):
 
         Example:
             ```pycon
-            >>> from mlev.results import AccuracyResult
+            >>> from metriclab.results import AccuracyResult
             >>> m1 = AccuracyResult(num_correct_predictions=7, num_predictions=10)
             >>> m2 = AccuracyResult(num_correct_predictions=7, num_predictions=10)
             >>> m3 = AccuracyResult(num_correct_predictions=5, num_predictions=10)
@@ -100,7 +100,7 @@ class BaseResult(ABC):
 
         Example:
             ```pycon
-            >>> from mlev.results import AccuracyResult
+            >>> from metriclab.results import AccuracyResult
             >>> m = AccuracyResult(num_correct_predictions=7, num_predictions=10)
             >>> m.to_dict()
             {'accuracy': 0.7, 'num_correct_predictions': 7, 'num_predictions': 10}
@@ -117,7 +117,7 @@ class BaseResult(ABC):
 
         Example:
             ```pycon
-            >>> from mlev.results import AccuracyResult
+            >>> from metriclab.results import AccuracyResult
             >>> m = AccuracyResult(num_correct_predictions=7, num_predictions=10)
             >>> print(m.to_display())
             Accuracy [██████████████░░░░░░]  0.7000  (7/10)
