@@ -5,11 +5,14 @@ from __future__ import annotations
 __all__ = ["Result"]
 
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any, Self
 
 from coola.equality import objects_are_allclose, objects_are_equal
 
 from metriclab.results.base import BaseResult
+
+if TYPE_CHECKING:
+    from typing import Self
 
 
 @dataclass(frozen=True)
@@ -44,6 +47,10 @@ class Result(BaseResult):
         if type(other) is not type(self):
             return False
         return objects_are_equal(self.results, other.results, equal_nan=equal_nan)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Self:
+        return cls(data)
 
     def to_dict(self, prefix: str = "", suffix: str = "") -> dict[str, Any]:
         return {f"{prefix}{k}{suffix}": v for k, v in self.results.items()}

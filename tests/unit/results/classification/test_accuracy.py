@@ -157,6 +157,78 @@ def test_accuracy_result_equal_false_different_type_child() -> None:
     )
 
 
+def test_accuracy_result_from_dict_standard() -> None:
+    assert AccuracyResult.from_dict({"num_correct_predictions": 7, "num_predictions": 10}).equal(
+        AccuracyResult(num_correct_predictions=7, num_predictions=10)
+    )
+
+
+def test_accuracy_result_from_dict_all_correct() -> None:
+    assert AccuracyResult.from_dict({"num_correct_predictions": 10, "num_predictions": 10}).equal(
+        AccuracyResult(num_correct_predictions=10, num_predictions=10)
+    )
+
+
+def test_accuracy_result_from_dict_none_correct() -> None:
+    assert AccuracyResult.from_dict({"num_correct_predictions": 0, "num_predictions": 10}).equal(
+        AccuracyResult(num_correct_predictions=0, num_predictions=10)
+    )
+
+
+def test_accuracy_result_from_dict_zero_predictions() -> None:
+    assert AccuracyResult.from_dict({"num_correct_predictions": 0, "num_predictions": 0}).equal(
+        AccuracyResult(num_correct_predictions=0, num_predictions=0)
+    )
+
+
+def test_accuracy_result_from_dict_nan_correct_predictions() -> None:
+    assert AccuracyResult.from_dict(
+        {"num_correct_predictions": float("nan"), "num_predictions": 10}
+    ).equal(
+        AccuracyResult(num_correct_predictions=float("nan"), num_predictions=10),
+        equal_nan=True,
+    )
+
+
+def test_accuracy_result_from_dict_returns_accuracy_result_instance() -> None:
+    assert isinstance(
+        AccuracyResult.from_dict({"num_correct_predictions": 7, "num_predictions": 10}),
+        AccuracyResult,
+    )
+
+
+def test_accuracy_result_from_dict_extra_keys_ignored() -> None:
+    # Extra keys in the dict should be ignored
+    assert AccuracyResult.from_dict(
+        {"num_correct_predictions": 7, "num_predictions": 10, "extra": 99}
+    ).equal(AccuracyResult(num_correct_predictions=7, num_predictions=10))
+
+
+def test_accuracy_result_from_dict_missing_key_raises() -> None:
+    with pytest.raises(KeyError):
+        AccuracyResult.from_dict({"num_correct_predictions": 7})
+
+
+def test_accuracy_result_from_dict_negative_predictions_raises() -> None:
+    with pytest.raises(ValueError, match="num_predictions must be >= 0"):
+        AccuracyResult.from_dict({"num_correct_predictions": 0, "num_predictions": -1})
+
+
+def test_accuracy_result_from_dict_negative_correct_predictions_raises() -> None:
+    with pytest.raises(ValueError, match="num_correct_predictions must be >= 0"):
+        AccuracyResult.from_dict({"num_correct_predictions": -1, "num_predictions": 10})
+
+
+def test_accuracy_result_from_dict_correct_exceeds_total_raises() -> None:
+    with pytest.raises(ValueError, match="cannot exceed num_predictions"):
+        AccuracyResult.from_dict({"num_correct_predictions": 11, "num_predictions": 10})
+
+
+def test_accuracy_result_from_dict_roundtrip() -> None:
+    m = AccuracyResult(num_correct_predictions=7, num_predictions=10)
+    assert AccuracyResult.from_dict({"num_correct_predictions": 7, "num_predictions": 10}).equal(m)
+
+
 @pytest.mark.parametrize(
     ("prefix", "suffix", "expected"),
     [

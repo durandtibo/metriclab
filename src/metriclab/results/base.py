@@ -5,9 +5,12 @@ from __future__ import annotations
 __all__ = ["BaseResult"]
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import TYPE_CHECKING, Any, Self
 
 from coola.equality.tester import EqualNanEqualityTester, get_default_registry
+
+if TYPE_CHECKING:
+    from typing import Self
 
 
 class BaseResult(ABC):
@@ -83,6 +86,27 @@ class BaseResult(ABC):
             True
             >>> m1.equal(m3)
             False
+
+            ```
+        """
+
+    @classmethod
+    @abstractmethod
+    def from_dict(cls, data: dict[str, Any]) -> Self:
+        r"""Create a ``Result`` from a dictionary of metric values.
+
+        Args:
+            data: A dictionary mapping metric names to their values.
+
+        Returns:
+            A ``Result`` containing the provided metrics.
+
+        Example:
+            ```pycon
+            >>> from metriclab.results import Result
+            >>> r = Result.from_dict({"accuracy": 0.9, "loss": 0.1})
+            >>> r.to_dict()
+            {'accuracy': 0.9, 'loss': 0.1}
 
             ```
         """
