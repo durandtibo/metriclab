@@ -6,6 +6,7 @@ export aggregates as dictionaries.
 
 from __future__ import annotations
 
-__all__ = ["BaseResult"]
+__all__ = ["BaseResult", "Result"]
 
 from metriclab.results.base import BaseResult
+from metriclab.results.vanilla import Result
