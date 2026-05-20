@@ -25,7 +25,6 @@ jobs:
           'all',
           'colorlog',
           'rich',
-          'sklearn',
         ]
 
     steps:
