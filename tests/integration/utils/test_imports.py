@@ -65,4 +65,3 @@ def test_is_rich_available_true() -> None:
 @rich_not_available
 def test_is_rich_available_false() -> None:
     assert not is_rich_available()
-
