@@ -10,6 +10,7 @@ __all__ = [
     "contains_value",
     "equal_to",
     "is_nan",
+    "multi_contains_value",
     "multi_equal_to",
     "multi_is_nan",
     "to_numpy",
@@ -30,5 +31,5 @@ from metriclab.utils.array.nan import (
     multi_is_nan,
     validate_nan_policy,
 )
-from metriclab.utils.array.search import contains_value
+from metriclab.utils.array.search import contains_value, multi_contains_value
 from metriclab.utils.array.shape import validate_array_ndim, validate_same_shape

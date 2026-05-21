@@ -5,7 +5,7 @@ from typing import Any
 import numpy as np
 import pytest
 
-from metriclab.utils.array import contains_value
+from metriclab.utils.array import contains_value, multi_contains_value
 
 ##################################
 #   Tests for contains_value     #
@@ -395,3 +395,361 @@ def test_contains_value_nan_non_numeric_typed_array(arr: np.ndarray) -> None:
 )
 def test_contains_value_datetime_array(arr: np.ndarray, value: Any, expected: bool) -> None:
     assert contains_value(arr, value) == expected
+
+
+############################################
+#     Tests for multi_contains_value       #
+############################################
+
+
+# --- single array ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "value", "expected"),
+    [
+        pytest.param([np.array([1, 2, 3])], 2, True, id="single-int-present"),
+        pytest.param([np.array([1, 2, 3])], 4, False, id="single-int-absent"),
+        pytest.param([np.array([1.0, 2.0, 3.0])], 2.0, True, id="single-float-present"),
+        pytest.param([np.array([1.0, 2.0, 3.0])], 4.0, False, id="single-float-absent"),
+        pytest.param([np.array(["cat", "dog"])], "cat", True, id="single-str-present"),
+        pytest.param([np.array(["cat", "dog"])], "wolf", False, id="single-str-absent"),
+        pytest.param(
+            [np.array([1.0, float("nan"), 3.0])], float("nan"), True, id="single-nan-present"
+        ),
+        pytest.param([np.array([1.0, 2.0, 3.0])], float("nan"), False, id="single-nan-absent"),
+        pytest.param([np.array([1, None, 3], dtype=object)], None, True, id="single-none-present"),
+        pytest.param([np.array([1, 2, 3], dtype=object)], None, False, id="single-none-absent"),
+        pytest.param(
+            [np.array([1.0, float("inf"), 3.0])], float("inf"), True, id="single-pos-inf-present"
+        ),
+        pytest.param(
+            [np.array([1.0, float("-inf"), 3.0])], float("-inf"), True, id="single-neg-inf-present"
+        ),
+        pytest.param([np.array([1.0, 2.0, 3.0])], float("inf"), False, id="single-inf-absent"),
+    ],
+)
+def test_multi_contains_value_single_array(
+    arrays: list[np.ndarray], value: Any, expected: bool
+) -> None:
+    assert multi_contains_value(arrays, value=value) == expected
+
+
+# --- integer values ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "value", "expected"),
+    [
+        pytest.param(
+            [np.array([1, 0, 0]), np.array([1, 2, 0])],
+            2,
+            True,
+            id="two-arrays-int-second-has-match",
+        ),
+        pytest.param(
+            [np.array([1, 2, 0]), np.array([1, 0, 0])],
+            2,
+            True,
+            id="two-arrays-int-first-has-match",
+        ),
+        pytest.param(
+            [np.array([1, 2, 0]), np.array([1, 0, 2])],
+            2,
+            True,
+            id="two-arrays-int-both-have-match",
+        ),
+        pytest.param(
+            [np.array([1, 0, 0]), np.array([1, 0, 0])],
+            2,
+            False,
+            id="two-arrays-int-absent",
+        ),
+        pytest.param(
+            [np.array([1, 0, 0]), np.array([0, 0, 0]), np.array([0, 0, 2])],
+            2,
+            True,
+            id="three-arrays-int-third-has-match",
+        ),
+        pytest.param(
+            [np.array([1, 0, 0]), np.array([0, 0, 0]), np.array([0, 0, 0])],
+            2,
+            False,
+            id="three-arrays-int-absent",
+        ),
+    ],
+)
+def test_multi_contains_value_int(arrays: list[np.ndarray], value: int, expected: bool) -> None:
+    assert multi_contains_value(arrays, value=value) == expected
+
+
+# --- float values ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "value", "expected"),
+    [
+        pytest.param(
+            [np.array([1.0, 0.0, 0.0]), np.array([1.0, 2.0, 0.0])],
+            2.0,
+            True,
+            id="two-arrays-float-second-has-match",
+        ),
+        pytest.param(
+            [np.array([1.0, 0.0, 0.0]), np.array([1.0, 0.0, 0.0])],
+            2.0,
+            False,
+            id="two-arrays-float-absent",
+        ),
+    ],
+)
+def test_multi_contains_value_float(arrays: list[np.ndarray], value: float, expected: bool) -> None:
+    assert multi_contains_value(arrays, value=value) == expected
+
+
+# --- string values ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "value", "expected"),
+    [
+        pytest.param(
+            [np.array(["cat", "bird"]), np.array(["fish", "dog"])],
+            "dog",
+            True,
+            id="two-str-arrays-second-has-match",
+        ),
+        pytest.param(
+            [np.array(["cat", "dog"]), np.array(["fish", "bird"])],
+            "dog",
+            True,
+            id="two-str-arrays-first-has-match",
+        ),
+        pytest.param(
+            [np.array(["cat", "bird"]), np.array(["fish", "fox"])],
+            "dog",
+            False,
+            id="two-str-arrays-absent",
+        ),
+        pytest.param(
+            [np.array(["cat", "dog"]), np.array(["CAT", "DOG"])],
+            "cat",
+            True,
+            id="str-case-sensitive-lower-match",
+        ),
+        pytest.param(
+            [np.array(["cat", "dog"]), np.array(["CAT", "DOG"])],
+            "CAT",
+            True,
+            id="str-case-sensitive-upper-match",
+        ),
+        pytest.param(
+            [np.array(["cat", "dog"]), np.array(["fish", "fox"])],
+            "Cat",
+            False,
+            id="str-case-sensitive-no-match",
+        ),
+    ],
+)
+def test_multi_contains_value_str(arrays: list[np.ndarray], value: str, expected: bool) -> None:
+    assert multi_contains_value(arrays, value=value) == expected
+
+
+# --- NaN ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "expected"),
+    [
+        pytest.param(
+            [np.array([1.0, float("nan"), 3.0]), np.array([4.0, 5.0, 6.0])],
+            True,
+            id="float-nan-in-first",
+        ),
+        pytest.param(
+            [np.array([1.0, 2.0, 3.0]), np.array([4.0, float("nan"), 6.0])],
+            True,
+            id="float-nan-in-second",
+        ),
+        pytest.param(
+            [np.array([1.0, float("nan"), 3.0]), np.array([float("nan"), 5.0, 6.0])],
+            True,
+            id="float-nan-in-both",
+        ),
+        pytest.param(
+            [np.array([1.0, 2.0, 3.0]), np.array([4.0, 5.0, 6.0])],
+            False,
+            id="float-nan-absent",
+        ),
+        pytest.param(
+            [
+                np.array([1, float("nan"), 0], dtype=object),
+                np.array([1, 2, 0], dtype=object),
+            ],
+            True,
+            id="object-nan-in-first",
+        ),
+        pytest.param(
+            [
+                np.array([1, 2, 3], dtype=object),
+                np.array([1, 2, 0], dtype=object),
+            ],
+            False,
+            id="object-nan-absent",
+        ),
+        pytest.param(
+            [np.array([None, None], dtype=object)],
+            False,
+            id="nan-not-confused-with-none",
+        ),
+        pytest.param(
+            [np.array([float("inf"), float("-inf")])],
+            False,
+            id="nan-not-confused-with-inf",
+        ),
+    ],
+)
+def test_multi_contains_value_nan(arrays: list[np.ndarray], expected: bool) -> None:
+    assert multi_contains_value(arrays, value=float("nan")) == expected
+
+
+# --- None ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "expected"),
+    [
+        pytest.param(
+            [np.array([1, None, 3], dtype=object), np.array([4, 5, 6], dtype=object)],
+            True,
+            id="none-in-first",
+        ),
+        pytest.param(
+            [np.array([1, 2, 3], dtype=object), np.array([4, None, 6], dtype=object)],
+            True,
+            id="none-in-second",
+        ),
+        pytest.param(
+            [np.array([1, 2, 3], dtype=object), np.array([4, 5, 6], dtype=object)],
+            False,
+            id="none-absent",
+        ),
+        pytest.param(
+            [np.array([0, False, ""], dtype=object)],
+            False,
+            id="none-not-confused-with-falsy",
+        ),
+        pytest.param(
+            [np.array([1.0, float("nan")]), np.array([2.0, 3.0])],
+            False,
+            id="none-not-confused-with-nan",
+        ),
+        pytest.param(
+            [np.array([1, 2, 3]), np.array([4, 5, 6])],
+            False,
+            id="none-non-object-arrays",
+        ),
+    ],
+)
+def test_multi_contains_value_none(arrays: list[np.ndarray], expected: bool) -> None:
+    assert multi_contains_value(arrays, value=None) == expected
+
+
+# --- inf ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "value", "expected"),
+    [
+        pytest.param(
+            [np.array([1.0, float("inf"), 3.0]), np.array([4.0, 5.0, 6.0])],
+            float("inf"),
+            True,
+            id="pos-inf-in-first",
+        ),
+        pytest.param(
+            [np.array([1.0, 2.0, 3.0]), np.array([4.0, float("inf"), 6.0])],
+            float("inf"),
+            True,
+            id="pos-inf-in-second",
+        ),
+        pytest.param(
+            [np.array([1.0, float("-inf"), 3.0]), np.array([4.0, 5.0, 6.0])],
+            float("-inf"),
+            True,
+            id="neg-inf-in-first",
+        ),
+        pytest.param(
+            [np.array([1.0, 2.0, 3.0]), np.array([4.0, 5.0, 6.0])],
+            float("inf"),
+            False,
+            id="inf-absent",
+        ),
+        pytest.param(
+            [np.array([float("inf"), 2.0]), np.array([3.0, float("-inf")])],
+            float("inf"),
+            True,
+            id="pos-inf-not-confused-with-neg-inf",
+        ),
+        pytest.param(
+            [np.array([float("inf"), 2.0]), np.array([3.0, float("-inf")])],
+            float("-inf"),
+            True,
+            id="neg-inf-not-confused-with-pos-inf",
+        ),
+    ],
+)
+def test_multi_contains_value_inf(arrays: list[np.ndarray], value: float, expected: bool) -> None:
+    assert multi_contains_value(arrays, value=value) == expected
+
+
+# --- short-circuit behavior ---
+
+
+def test_multi_contains_value_short_circuits_on_first_match() -> None:
+    # value is in first array — second array is never searched
+    arrays = [np.array([1, 2, 3]), np.array([4, 5, 6])]
+    assert multi_contains_value(arrays, value=2)
+
+
+# --- arrays of different shapes ---
+
+
+def test_multi_contains_value_different_shapes() -> None:
+    # shape constraint is not required for this function
+    assert multi_contains_value([np.array([1, 2, 3]), np.array([4, 5, 6, 7])], value=5)
+
+
+# --- edge cases ---
+
+
+def test_multi_contains_value_empty_input_raises() -> None:
+    with pytest.raises(ValueError, match="'arrays' cannot be empty"):
+        multi_contains_value([], value=2)
+
+
+def test_multi_contains_value_empty_arrays() -> None:
+    assert not multi_contains_value(
+        [np.array([], dtype=float), np.array([], dtype=float)], value=1.0
+    )
+
+
+def test_multi_contains_value_single_element_match() -> None:
+    assert multi_contains_value([np.array([2.0]), np.array([1.0])], value=2.0)
+
+
+def test_multi_contains_value_single_element_no_match() -> None:
+    assert not multi_contains_value([np.array([1.0]), np.array([3.0])], value=2.0)
+
+
+def test_multi_contains_value_all_arrays_match() -> None:
+    assert multi_contains_value([np.array([2, 2, 2]), np.array([2, 2, 2])], value=2)
+
+
+def test_multi_contains_value_2d_arrays() -> None:
+    assert multi_contains_value([np.array([[1, 2], [3, 4]]), np.array([[5, 6], [7, 8]])], value=6)
+
+
+def test_multi_contains_value_bool_array() -> None:
+    assert multi_contains_value([np.array([True, False])], value=False)
+    assert not multi_contains_value([np.array([True, True])], value=False)
