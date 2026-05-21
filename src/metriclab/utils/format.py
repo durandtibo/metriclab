@@ -1,4 +1,5 @@
-r"""Helpers to build compact string representations for metric outputs."""
+r"""Helpers to build compact string representations for metric
+outputs."""
 
 from __future__ import annotations
 
