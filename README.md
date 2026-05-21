@@ -9,6 +9,7 @@ them for display.
 
 ## Quickstart
 
+```pycon
 >>> from metriclab.results import AccuracyResult, Result
 >>> accuracy = AccuracyResult(num_correct_predictions=7, num_predictions=10)
 >>> accuracy.accuracy
@@ -17,3 +18,5 @@ them for display.
 {'val_accuracy': 0.7, 'val_num_correct_predictions': 7, 'val_num_predictions': 10}
 >>> Result({"loss": 0.2, "accuracy": 0.7}).to_display()
 "{'loss': 0.2, 'accuracy': 0.7}"
+
+```
