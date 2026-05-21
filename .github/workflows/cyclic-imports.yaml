@@ -30,23 +30,11 @@ jobs:
       - name: check metriclab.functional
         run: |
           python -c "from metriclab import functional"
-      - name: check metriclab.functional.array
-        run: |
-          python -c "from metriclab.functional import array"
-      - name: check metriclab.functional.frame
-        run: |
-          python -c "from metriclab.functional import frame"
 
       # Test metrics module imports
       - name: check metriclab.metrics
         run: |
           python -c "from metriclab import metrics"
-      - name: check metriclab.metrics.array
-        run: |
-          python -c "from metriclab.metrics import array"
-      - name: check metriclab.metrics.frame
-        run: |
-          python -c "from metriclab.metrics import frame"
 
       # Test result module imports
       - name: check metriclab.results
@@ -62,3 +50,9 @@ jobs:
       - name: check metriclab.utils
         run: |
           python -c "from metriclab import utils"
+      - name: check metriclab.utils.array
+        run: |
+          python -c "from metriclab.utils import array"
+      - name: check metriclab.utils.imports
+        run: |
+          python -c "from metriclab.utils import imports"
