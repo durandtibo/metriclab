@@ -8,7 +8,9 @@ __all__ = [
     "check_nan_policy",
     "contains_nan",
     "contains_value",
+    "validate_array_ndim",
     "validate_nan_policy",
+    "validate_same_shape",
 ]
 
 from metriclab.utils.array.nan import (
@@ -19,3 +21,4 @@ from metriclab.utils.array.nan import (
     validate_nan_policy,
 )
 from metriclab.utils.array.search import contains_value
+from metriclab.utils.array.shape import validate_array_ndim, validate_same_shape

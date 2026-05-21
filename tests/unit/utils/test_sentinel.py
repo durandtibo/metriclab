@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 from typing import Any
 
 from metriclab.utils.sentinel import NOT_SET, _NotSet
 
-##################################
-#     Tests for _NotSet          #
-##################################
+#############################
+#     Tests for NOT_SET     #
+#############################
 
 
 # --- instantiation ---
