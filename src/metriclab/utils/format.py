@@ -1,5 +1,4 @@
-r"""Implement some utility functions to compute string representations
-of objects."""
+r"""Helpers to build compact string representations for metric outputs."""
 
 from __future__ import annotations
 

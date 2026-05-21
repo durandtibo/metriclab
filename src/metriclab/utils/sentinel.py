@@ -1,4 +1,4 @@
-r"""Contain sentinels."""
+r"""Sentinel values used across metriclab."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-r"""Contain search utilities."""
+r"""Utilities to search for values in NumPy arrays."""
 
 from __future__ import annotations
 

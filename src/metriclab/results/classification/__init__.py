@@ -1,1 +1,2 @@
-r"""Classification-specific result objects."""
+r"""Result objects tailored to classification metrics.
+"""
