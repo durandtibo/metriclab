@@ -5,7 +5,7 @@ from __future__ import annotations
 __all__ = ["BaseResult"]
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Any
 
 from coola.equality.tester import EqualNanEqualityTester, get_default_registry
 
