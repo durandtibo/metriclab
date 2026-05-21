@@ -21,6 +21,11 @@ if TYPE_CHECKING:
 class AccuracyResult(BaseResult):
     r"""Store aggregated values used to compute classification accuracy.
 
+    The inherited ``to_dict`` method exports both the derived ``accuracy``
+    value and the raw counts used to compute it. ``to_display`` returns a
+    compact textual summary for terminal output, and ``combine`` merges two
+    partial aggregations.
+
     Attributes:
         num_correct_predictions: The number of correct predictions.
             Set to NaN if the number of correct predictions is unknown
@@ -128,6 +133,25 @@ class AccuracyResult(BaseResult):
         )
 
     def combine(self, other: AccuracyResult) -> AccuracyResult:
+        r"""Merge two partial accuracy results.
+
+        Args:
+            other: Another accuracy result to combine with ``self``.
+
+        Returns:
+            A new accuracy result whose counts are the sum of both results.
+
+        Raises:
+            TypeError: If ``other`` is not an :class:`AccuracyResult`.
+
+        Example:
+            ```pycon
+            >>> from metriclab.results import AccuracyResult
+            >>> AccuracyResult(3, 4).combine(AccuracyResult(5, 6))
+            AccuracyResult(num_correct_predictions=8, num_predictions=10)
+
+            ```
+        """
         if not isinstance(other, AccuracyResult):
             msg = f"Cannot combine {self.__class__.__qualname__} with {type(other)}"
             raise TypeError(msg)
@@ -142,7 +166,7 @@ def compute_accuracy(num_correct_predictions: float, num_predictions: float) -> 
 
     Args:
         num_correct_predictions: The number of correct predictions,
-            or ``nan``.
+            or ``nan`` if that count is unknown.
         num_predictions: The total number of predictions, or ``nan``.
 
     Returns:

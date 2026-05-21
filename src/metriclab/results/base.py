@@ -16,6 +16,9 @@ if TYPE_CHECKING:
 class BaseResult(ABC):
     r"""Base class for immutable metric result containers.
 
+    Subclasses implement a common interface for equality checks,
+    serialization, and display formatting.
+
     Example:
         ```pycon
         >>> from metriclab.results import AccuracyResult
@@ -93,13 +96,14 @@ class BaseResult(ABC):
     @classmethod
     @abstractmethod
     def from_dict(cls, data: dict[str, Any]) -> Self:
-        r"""Create a ``Result`` from a dictionary of metric values.
+        r"""Create a result object from a dictionary of metric values.
 
         Args:
-            data: A dictionary mapping metric names to their values.
+            data: A dictionary mapping metric names to their values. Concrete
+                subclasses may require specific keys.
 
         Returns:
-            A ``Result`` containing the provided metrics.
+            A result object initialized from ``data``.
 
         Example:
             ```pycon
@@ -126,8 +130,8 @@ class BaseResult(ABC):
             ```pycon
             >>> from metriclab.results import AccuracyResult
             >>> m = AccuracyResult(num_correct_predictions=7, num_predictions=10)
-            >>> m.to_dict()
-            {'accuracy': 0.7, 'num_correct_predictions': 7, 'num_predictions': 10}
+            >>> m.to_dict(prefix="val_", suffix="_score")
+            {'val_accuracy_score': 0.7, 'val_num_correct_predictions_score': 7, 'val_num_predictions_score': 10}
 
             ```
         """

@@ -1,4 +1,4 @@
-r"""Contains immutable metric result containers."""
+r"""A generic immutable container for metric values."""
 
 from __future__ import annotations
 
@@ -20,7 +20,22 @@ class Result(BaseResult):
     r"""Implement a simple metric result container.
 
     Args:
-        results: A dictionary containing metric results.
+        results: A dictionary containing metric names and values.
+
+    The inherited ``to_dict`` method returns ``results`` unchanged unless a
+    prefix or suffix is provided. The inherited ``to_display`` method renders
+    the exported dictionary with :class:`str`.
+
+    Example:
+        ```pycon
+        >>> from metriclab.results import Result
+        >>> result = Result({"accuracy": 0.8, "loss": 0.2})
+        >>> result.to_dict(suffix="_metric")
+        {'accuracy_metric': 0.8, 'loss_metric': 0.2}
+        >>> result.to_display()
+        "{'accuracy': 0.8, 'loss': 0.2}"
+
+        ```
     """
 
     results: dict[str, Any]
