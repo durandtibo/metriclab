@@ -4,14 +4,17 @@ from __future__ import annotations
 
 __all__ = ["to_numpy", "to_numpy_1d"]
 
-from typing import Any
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from metriclab.utils.array.shape import validate_array_ndim
 
+if TYPE_CHECKING:
+    from metriclab.typing import ArrayLike
 
-def to_numpy(x: Any, name: str = "input") -> np.ndarray:
+
+def to_numpy(x: ArrayLike, name: str = "input") -> np.ndarray:
     r"""Convert an array-like object to a NumPy array.
 
     Supported input types are :class:`numpy.ndarray`,
@@ -48,7 +51,7 @@ def to_numpy(x: Any, name: str = "input") -> np.ndarray:
     raise TypeError(msg)
 
 
-def to_numpy_1d(x: Any, name: str = "input") -> np.ndarray:
+def to_numpy_1d(x: ArrayLike, name: str = "input") -> np.ndarray:
     r"""Convert an array-like object to a 1D NumPy array.
 
     Supported input types are the same as :func:`to_numpy`.
