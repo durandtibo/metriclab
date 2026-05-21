@@ -13,6 +13,7 @@ __all__ = [
     "multi_contains_value",
     "multi_equal_to",
     "multi_is_nan",
+    "preprocess_1d",
     "to_numpy",
     "to_numpy_1d",
     "validate_array_ndim",
@@ -31,5 +32,6 @@ from metriclab.utils.array.nan import (
     multi_is_nan,
     validate_nan_policy,
 )
+from metriclab.utils.array.preprocessing import preprocess_1d
 from metriclab.utils.array.search import contains_value, multi_contains_value
 from metriclab.utils.array.shape import validate_array_ndim, validate_same_shape
