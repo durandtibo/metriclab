@@ -9,6 +9,8 @@ __all__ = [
     "contains_nan",
     "contains_value",
     "equal_to",
+    "is_nan",
+    "multi_is_nan",
     "to_numpy",
     "to_numpy_1d",
     "validate_array_ndim",
@@ -23,6 +25,8 @@ from metriclab.utils.array.nan import (
     NanPolicy,
     check_nan_policy,
     contains_nan,
+    is_nan,
+    multi_is_nan,
     validate_nan_policy,
 )
 from metriclab.utils.array.search import contains_value
