@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from coola.equality import objects_are_equal
 
 from metriclab.utils.array import (
     NAN_POLICIES,
     NanPolicy,
     check_nan_policy,
     contains_nan,
+    is_nan,
+    multi_is_nan,
     validate_nan_policy,
 )
 
@@ -235,3 +238,376 @@ def test_check_nan_policy_single_nan() -> None:
 
 def test_check_nan_policy_single_no_nan() -> None:
     assert not check_nan_policy(np.array([1.0]))
+
+
+##################################
+#       Tests for is_nan         #
+##################################
+
+
+# --- float arrays ---
+
+
+@pytest.mark.parametrize(
+    ("arr", "expected"),
+    [
+        pytest.param(
+            np.array([1.0, 2.0, 3.0]),
+            np.array([False, False, False]),
+            id="float-no-nan",
+        ),
+        pytest.param(
+            np.array([1.0, float("nan"), 3.0]),
+            np.array([False, True, False]),
+            id="float-nan-middle",
+        ),
+        pytest.param(
+            np.array([float("nan"), 2.0, 3.0]),
+            np.array([True, False, False]),
+            id="float-nan-start",
+        ),
+        pytest.param(
+            np.array([1.0, 2.0, float("nan")]),
+            np.array([False, False, True]),
+            id="float-nan-end",
+        ),
+        pytest.param(
+            np.array([float("nan"), float("nan")]),
+            np.array([True, True]),
+            id="float-all-nan",
+        ),
+        pytest.param(
+            np.array([float("nan")]),
+            np.array([True]),
+            id="float-single-nan",
+        ),
+        pytest.param(
+            np.array([1.0]),
+            np.array([False]),
+            id="float-single-no-nan",
+        ),
+        pytest.param(
+            np.array([], dtype=float),
+            np.array([], dtype=bool),
+            id="float-empty",
+        ),
+    ],
+)
+def test_is_nan_float_array(arr: np.ndarray, expected: np.ndarray) -> None:
+    assert objects_are_equal(is_nan(arr), expected)
+
+
+# --- int arrays ---
+
+
+@pytest.mark.parametrize(
+    "arr",
+    [
+        pytest.param(np.array([1, 2, 3]), id="int64"),
+        pytest.param(np.array([1, 2, 3], dtype=np.int8), id="int8"),
+        pytest.param(np.array([1, 2, 3], dtype=np.int16), id="int16"),
+        pytest.param(np.array([1, 2, 3], dtype=np.int32), id="int32"),
+        pytest.param(np.array([1, 2, 3], dtype=np.uint8), id="uint8"),
+    ],
+)
+def test_is_nan_int_array(arr: np.ndarray) -> None:
+    assert objects_are_equal(is_nan(arr), np.array([False, False, False]))
+
+
+# --- object arrays ---
+
+
+@pytest.mark.parametrize(
+    ("arr", "expected"),
+    [
+        pytest.param(
+            np.array([1, 2, 3], dtype=object),
+            np.array([False, False, False]),
+            id="object-no-nan",
+        ),
+        pytest.param(
+            np.array([1, float("nan"), 3], dtype=object),
+            np.array([False, True, False]),
+            id="object-nan-middle",
+        ),
+        pytest.param(
+            np.array([float("nan"), 2, 3], dtype=object),
+            np.array([True, False, False]),
+            id="object-nan-start",
+        ),
+        pytest.param(
+            np.array([1, 2, float("nan")], dtype=object),
+            np.array([False, False, True]),
+            id="object-nan-end",
+        ),
+        pytest.param(
+            np.array([float("nan"), float("nan")], dtype=object),
+            np.array([True, True]),
+            id="object-all-nan",
+        ),
+        pytest.param(
+            np.array([None, float("nan"), 1], dtype=object),
+            np.array([False, True, False]),
+            id="object-none-not-nan",
+        ),
+        pytest.param(
+            np.array([None, None], dtype=object),
+            np.array([False, False]),
+            id="object-all-none-not-nan",
+        ),
+        pytest.param(
+            np.array([], dtype=object),
+            np.array([], dtype=bool),
+            id="object-empty",
+        ),
+    ],
+)
+def test_is_nan_object_array(arr: np.ndarray, expected: np.ndarray) -> None:
+    assert objects_are_equal(is_nan(arr), expected)
+
+
+# --- non-numeric dtypes (TypeError fallback) ---
+
+
+@pytest.mark.parametrize(
+    "arr",
+    [
+        pytest.param(np.array(["a", "b", "c"]), id="str"),
+        pytest.param(np.array(["2021-01-01", "2021-01-02"], dtype="datetime64"), id="datetime64"),
+        pytest.param(np.array([True, False, True]), id="bool"),
+    ],
+)
+def test_is_nan_non_numeric_array(arr: np.ndarray) -> None:
+    assert objects_are_equal(is_nan(arr), np.zeros(arr.shape, dtype=bool))
+
+
+# --- special values not confused with nan ---
+
+
+def test_is_nan_inf_is_not_nan() -> None:
+    assert objects_are_equal(
+        is_nan(np.array([float("inf"), float("-inf")])),
+        np.array([False, False]),
+    )
+
+
+def test_is_nan_none_is_not_nan() -> None:
+    assert objects_are_equal(
+        is_nan(np.array([None, None], dtype=object)),
+        np.array([False, False]),
+    )
+
+
+def test_is_nan_zero_is_not_nan() -> None:
+    assert objects_are_equal(
+        is_nan(np.array([0.0, 0.0])),
+        np.array([False, False]),
+    )
+
+
+# --- output properties ---
+
+
+def test_is_nan_returns_bool_dtype() -> None:
+    assert is_nan(np.array([1.0, float("nan")])).dtype == bool
+
+
+def test_is_nan_object_returns_bool_dtype() -> None:
+    assert is_nan(np.array([1, float("nan")], dtype=object)).dtype == bool
+
+
+def test_is_nan_preserves_shape_1d() -> None:
+    arr = np.array([1.0, float("nan"), 3.0])
+    assert is_nan(arr).shape == arr.shape
+
+
+def test_is_nan_preserves_shape_2d() -> None:
+    arr = np.array([[1.0, float("nan")], [3.0, 4.0]])
+    assert objects_are_equal(
+        is_nan(arr),
+        np.array([[False, True], [False, False]]),
+    )
+
+
+def test_is_nan_preserves_shape_2d_object() -> None:
+    arr = np.array([[1, float("nan")], [None, 4]], dtype=object)
+    assert objects_are_equal(
+        is_nan(arr),
+        np.array([[False, True], [False, False]]),
+    )
+
+
+##################################
+#     Tests for multi_is_nan     #
+##################################
+
+
+# --- single array ---
+
+
+def test_multi_is_nan_single_array_no_nan() -> None:
+    assert objects_are_equal(
+        multi_is_nan([np.array([1.0, 2.0, 3.0])]),
+        np.array([False, False, False]),
+    )
+
+
+def test_multi_is_nan_single_array_with_nan() -> None:
+    assert objects_are_equal(
+        multi_is_nan([np.array([1.0, float("nan"), 3.0])]),
+        np.array([False, True, False]),
+    )
+
+
+def test_multi_is_nan_single_array_all_nan() -> None:
+    assert objects_are_equal(
+        multi_is_nan([np.array([float("nan"), float("nan")])]),
+        np.array([True, True]),
+    )
+
+
+# --- multiple arrays ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "expected"),
+    [
+        pytest.param(
+            [np.array([1.0, 2.0, 3.0]), np.array([4.0, 5.0, 6.0])],
+            np.array([False, False, False]),
+            id="two-arrays-no-nan",
+        ),
+        pytest.param(
+            [np.array([1.0, float("nan"), 3.0]), np.array([4.0, 5.0, 6.0])],
+            np.array([False, True, False]),
+            id="two-arrays-nan-in-first",
+        ),
+        pytest.param(
+            [np.array([1.0, 2.0, 3.0]), np.array([4.0, float("nan"), 6.0])],
+            np.array([False, True, False]),
+            id="two-arrays-nan-in-second",
+        ),
+        pytest.param(
+            [np.array([1.0, float("nan"), 3.0]), np.array([float("nan"), 5.0, 6.0])],
+            np.array([True, True, False]),
+            id="two-arrays-nan-in-both",
+        ),
+        pytest.param(
+            [np.array([1.0, float("nan"), 3.0]), np.array([4.0, float("nan"), 6.0])],
+            np.array([False, True, False]),
+            id="two-arrays-nan-overlap",
+        ),
+        pytest.param(
+            [
+                np.array([1.0, float("nan"), 3.0]),
+                np.array([4.0, 5.0, float("nan")]),
+                np.array([float("nan"), 8.0, 9.0]),
+            ],
+            np.array([True, True, True]),
+            id="three-arrays",
+        ),
+    ],
+)
+def test_multi_is_nan_multiple_arrays(arrays: list[np.ndarray], expected: np.ndarray) -> None:
+    assert objects_are_equal(multi_is_nan(arrays), expected)
+
+
+# --- object arrays ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "expected"),
+    [
+        pytest.param(
+            [
+                np.array([1, float("nan"), 0], dtype=object),
+                np.array([float("nan"), 2, 0], dtype=object),
+            ],
+            np.array([True, True, False]),
+            id="object-nan-in-both",
+        ),
+        pytest.param(
+            [
+                np.array([1, None, 3], dtype=object),
+                np.array([4, 5, 6], dtype=object),
+            ],
+            np.array([False, False, False]),
+            id="object-none-not-nan",
+        ),
+        pytest.param(
+            [
+                np.array([1, float("nan"), 3], dtype=object),
+                np.array([None, 2, 3], dtype=object),
+            ],
+            np.array([False, True, False]),
+            id="object-mixed-nan-and-none",
+        ),
+    ],
+)
+def test_multi_is_nan_object_arrays(arrays: list[np.ndarray], expected: np.ndarray) -> None:
+    assert objects_are_equal(multi_is_nan(arrays), expected)
+
+
+# --- output properties ---
+
+
+def test_multi_is_nan_returns_bool_dtype() -> None:
+    assert multi_is_nan([np.array([1.0, float("nan")])]).dtype == bool
+
+
+def test_multi_is_nan_preserves_shape() -> None:
+    arrays = [np.array([1.0, float("nan"), 3.0]), np.array([4.0, 5.0, 6.0])]
+    assert multi_is_nan(arrays).shape == arrays[0].shape
+
+
+def test_multi_is_nan_2d_arrays() -> None:
+    assert objects_are_equal(
+        multi_is_nan(
+            [
+                np.array([[1.0, float("nan")], [3.0, 4.0]]),
+                np.array([[float("nan"), 2.0], [3.0, 4.0]]),
+            ]
+        ),
+        np.array([[True, True], [False, False]]),
+    )
+
+
+# --- empty input raises ---
+
+
+def test_multi_is_nan_empty_raises() -> None:
+    with pytest.raises(ValueError, match="'arrays' cannot be empty"):
+        multi_is_nan([])
+
+
+# --- edge cases ---
+
+
+def test_multi_is_nan_empty_arrays() -> None:
+    assert objects_are_equal(
+        multi_is_nan([np.array([], dtype=float), np.array([], dtype=float)]),
+        np.array([], dtype=bool),
+    )
+
+
+def test_multi_is_nan_single_element_nan() -> None:
+    assert objects_are_equal(
+        multi_is_nan([np.array([float("nan")]), np.array([1.0])]),
+        np.array([True]),
+    )
+
+
+def test_multi_is_nan_single_element_no_nan() -> None:
+    assert objects_are_equal(
+        multi_is_nan([np.array([1.0]), np.array([2.0])]),
+        np.array([False]),
+    )
+
+
+def test_multi_is_nan_all_nan() -> None:
+    assert objects_are_equal(
+        multi_is_nan(
+            [np.array([float("nan"), float("nan")]), np.array([float("nan"), float("nan")])]
+        ),
+        np.array([True, True]),
+    )
