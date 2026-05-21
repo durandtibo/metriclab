@@ -31,35 +31,35 @@ def accuracy(
     r"""Compute the accuracy score.
 
     Args:
-            y_true: The ground truth target labels.
-            y_pred: The predicted labels.
-            missing_policy: The policy for handling missing values.
-                Valid values are ``'omit'``, ``'propagate'``, or
-                ``'raise'``. ``'omit'`` removes rows where any array
-                equals ``missing_values`` before computing the metric.
-                ``'propagate'`` keeps the rows but returns
-                ``num_correct_predictions=nan`` when missing values are
-                detected. ``'raise'`` raises a ``ValueError`` if any
-                array contains ``missing_values``.
-            missing_values: The value to treat as missing. If not set,
-                missing value handling is disabled regardless of
-                ``missing_policy``.
-            raise_empty: If ``True``, raises ``EmptyMetricError`` when
-                there are no valid predictions. If ``False``, returns an
-                ``AccuracyResult`` with ``num_predictions=0``.
+        y_true: The ground truth target labels.
+        y_pred: The predicted labels.
+        missing_policy: The policy for handling missing values.
+            Valid values are ``'omit'``, ``'propagate'``, or
+            ``'raise'``. ``'omit'`` removes rows where any array
+            equals ``missing_values`` before computing the metric.
+            ``'propagate'`` keeps the rows but returns
+            ``num_correct_predictions=nan`` when missing values are
+            detected. ``'raise'`` raises a ``ValueError`` if any
+            array contains ``missing_values``.
+        missing_values: The value to treat as missing. If not set,
+            missing value handling is disabled regardless of
+            ``missing_policy``.
+        raise_empty: If ``True``, raises ``EmptyMetricError`` when
+            there are no valid predictions. If ``False``, returns an
+            ``AccuracyResult`` with ``num_predictions=0``.
 
     Returns:
-            The accuracy result. When missing values are present and
-            ``missing_policy='propagate'``, the result keeps
-            ``num_predictions`` and sets ``num_correct_predictions`` to
-            ``nan``.
+        The accuracy result. When missing values are present and
+        ``missing_policy='propagate'``, the result keeps
+        ``num_predictions`` and sets ``num_correct_predictions`` to
+        ``nan``.
 
     Raises:
-            EmptyMetricError: if there are no valid predictions and
-                ``raise_empty`` is ``True``.
-            ValueError: if ``missing_policy`` is invalid.
-            ValueError: if ``y_true`` or ``y_pred`` contains
-                ``missing_values`` and ``missing_policy`` is ``'raise'``.
+        EmptyMetricError: if there are no valid predictions and
+            ``raise_empty`` is ``True``.
+        ValueError: if ``missing_policy`` is invalid.
+        ValueError: if ``y_true`` or ``y_pred`` contains
+            ``missing_values`` and ``missing_policy`` is ``'raise'``.
 
     Example:
     ```pycon
