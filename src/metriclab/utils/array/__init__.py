@@ -8,6 +8,7 @@ __all__ = [
     "check_nan_policy",
     "contains_nan",
     "contains_value",
+    "equal_to",
     "to_numpy",
     "to_numpy_1d",
     "validate_array_ndim",
@@ -16,6 +17,7 @@ __all__ = [
 ]
 
 from metriclab.utils.array.conversion import to_numpy, to_numpy_1d
+from metriclab.utils.array.equal import equal_to
 from metriclab.utils.array.nan import (
     NAN_POLICIES,
     NanPolicy,
