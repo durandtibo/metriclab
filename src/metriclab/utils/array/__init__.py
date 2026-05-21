@@ -10,6 +10,7 @@ __all__ = [
     "contains_value",
     "equal_to",
     "is_nan",
+    "multi_equal_to",
     "multi_is_nan",
     "to_numpy",
     "to_numpy_1d",
@@ -19,7 +20,7 @@ __all__ = [
 ]
 
 from metriclab.utils.array.conversion import to_numpy, to_numpy_1d
-from metriclab.utils.array.equal import equal_to
+from metriclab.utils.array.equal import equal_to, multi_equal_to
 from metriclab.utils.array.nan import (
     NAN_POLICIES,
     NanPolicy,
