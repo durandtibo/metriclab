@@ -15,8 +15,9 @@ Example:
 
 from __future__ import annotations
 
-__all__ = ["AccuracyResult", "BaseResult", "Result"]
+__all__ = ["AccuracyResult", "BaseResult", "Result", "ResultDict"]
 
 from metriclab.results.base import BaseResult
 from metriclab.results.classification.accuracy import AccuracyResult
+from metriclab.results.mapping import ResultDict
 from metriclab.results.vanilla import Result
