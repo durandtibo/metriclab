@@ -2,7 +2,7 @@ r"""Validation helpers for missing-value handling policies."""
 
 from __future__ import annotations
 
-__all__ = ["MISSING_POLICIES", "MissingPolicy", "check_missing_policy"]
+__all__ = ["MISSING_POLICIES", "MissingPolicy", "validate_missing_policy"]
 
 from typing import Literal
 
@@ -11,7 +11,7 @@ MISSING_POLICIES = ["omit", "propagate", "raise"]
 MissingPolicy = Literal["omit", "propagate", "raise"]
 
 
-def check_missing_policy(missing_policy: str) -> None:
+def validate_missing_policy(missing_policy: str) -> None:
     r"""Validate a missing-value policy value.
 
     Args:
@@ -23,8 +23,8 @@ def check_missing_policy(missing_policy: str) -> None:
 
     Example:
         ```pycon
-        >>> from metriclab.utils.missing import check_missing_policy
-        >>> check_missing_policy(missing_policy="omit")
+        >>> from metriclab.utils.missing import validate_missing_policy
+        >>> validate_missing_policy("omit")
 
         ```
     """
