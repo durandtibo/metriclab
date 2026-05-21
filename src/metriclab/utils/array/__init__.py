@@ -8,11 +8,14 @@ __all__ = [
     "check_nan_policy",
     "contains_nan",
     "contains_value",
+    "to_numpy",
+    "to_numpy_1d",
     "validate_array_ndim",
     "validate_nan_policy",
     "validate_same_shape",
 ]
 
+from metriclab.utils.array.conversion import to_numpy, to_numpy_1d
 from metriclab.utils.array.nan import (
     NAN_POLICIES,
     NanPolicy,
