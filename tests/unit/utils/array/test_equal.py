@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from coola.equality import objects_are_equal
 
-from metriclab.utils.array import equal_to
+from metriclab.utils.array import equal_to, multi_equal_to
 
 ##############################
 #     Tests for equal_to     #
@@ -491,3 +491,400 @@ def test_equal_to_empty_array(arr: np.ndarray, value: Any) -> None:
 )
 def test_equal_to_single_element(arr: np.ndarray, value: Any, expected: np.ndarray) -> None:
     assert objects_are_equal(equal_to(arr, value), expected)
+
+
+##################################
+#    Tests for multi_equal_to    #
+##################################
+
+
+# --- single array ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "value", "expected"),
+    [
+        pytest.param(
+            [np.array([1, 2, 3, 2])],
+            2,
+            np.array([False, True, False, True]),
+            id="single-int-present",
+        ),
+        pytest.param(
+            [np.array([1, 2, 3])],
+            4,
+            np.array([False, False, False]),
+            id="single-int-absent",
+        ),
+        pytest.param(
+            [np.array([1.0, float("nan"), 3.0])],
+            float("nan"),
+            np.array([False, True, False]),
+            id="single-nan",
+        ),
+        pytest.param(
+            [np.array([1, None, 3], dtype=object)],
+            None,
+            np.array([False, True, False]),
+            id="single-none",
+        ),
+        pytest.param(
+            [np.array([1.0, float("inf"), 3.0])],
+            float("inf"),
+            np.array([False, True, False]),
+            id="single-pos-inf",
+        ),
+        pytest.param(
+            [np.array([1.0, float("-inf"), 3.0])],
+            float("-inf"),
+            np.array([False, True, False]),
+            id="single-neg-inf",
+        ),
+    ],
+)
+def test_multi_equal_to_single_array(
+    arrays: list[np.ndarray], value: Any, expected: np.ndarray
+) -> None:
+    assert objects_are_equal(multi_equal_to(arrays, value=value), expected)
+
+
+# --- integer values ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "value", "expected"),
+    [
+        pytest.param(
+            [np.array([1, 0, 0, 1]), np.array([1, 2, 0, 1])],
+            2,
+            np.array([False, True, False, False]),
+            id="two-arrays-int-second-has-match",
+        ),
+        pytest.param(
+            [np.array([1, 2, 0, 1]), np.array([1, 0, 0, 2])],
+            2,
+            np.array([False, True, False, True]),
+            id="two-arrays-int-both-have-match",
+        ),
+        pytest.param(
+            [np.array([1, 0, 0, 1]), np.array([1, 0, 0, 1])],
+            2,
+            np.array([False, False, False, False]),
+            id="two-arrays-int-absent",
+        ),
+        pytest.param(
+            [np.array([2, 2, 2]), np.array([2, 2, 2])],
+            2,
+            np.array([True, True, True]),
+            id="two-arrays-int-all-match",
+        ),
+        pytest.param(
+            [
+                np.array([1, 0, 0]),
+                np.array([0, 2, 0]),
+                np.array([0, 0, 2]),
+            ],
+            2,
+            np.array([False, True, True]),
+            id="three-arrays-int",
+        ),
+    ],
+)
+def test_multi_equal_to_int_value(
+    arrays: list[np.ndarray], value: int, expected: np.ndarray
+) -> None:
+    assert objects_are_equal(multi_equal_to(arrays, value=value), expected)
+
+
+# --- float values ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "value", "expected"),
+    [
+        pytest.param(
+            [np.array([1.0, 0.0, 0.0]), np.array([1.0, 2.0, 0.0])],
+            2.0,
+            np.array([False, True, False]),
+            id="two-arrays-float-second-has-match",
+        ),
+        pytest.param(
+            [np.array([1.0, 2.0, 0.0]), np.array([1.0, 0.0, 2.0])],
+            2.0,
+            np.array([False, True, True]),
+            id="two-arrays-float-both-have-match",
+        ),
+        pytest.param(
+            [np.array([1.0, 0.0, 0.0]), np.array([1.0, 0.0, 0.0])],
+            2.0,
+            np.array([False, False, False]),
+            id="two-arrays-float-absent",
+        ),
+    ],
+)
+def test_multi_equal_to_float_value(
+    arrays: list[np.ndarray], value: float, expected: np.ndarray
+) -> None:
+    assert objects_are_equal(multi_equal_to(arrays, value=value), expected)
+
+
+# --- string values ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "value", "expected"),
+    [
+        pytest.param(
+            [np.array(["cat", "dog", "cat"]), np.array(["bird", "dog", "fish"])],
+            "dog",
+            np.array([False, True, False]),
+            id="two-str-arrays-match-in-both",
+        ),
+        pytest.param(
+            [np.array(["cat", "bird", "cat"]), np.array(["bird", "cat", "fish"])],
+            "dog",
+            np.array([False, False, False]),
+            id="two-str-arrays-absent",
+        ),
+        pytest.param(
+            [np.array(["cat", "dog", "cat"]), np.array(["cat", "cat", "dog"])],
+            "dog",
+            np.array([False, True, True]),
+            id="two-str-arrays-different-positions",
+        ),
+        pytest.param(
+            [np.array(["cat", "dog"]), np.array(["cat", "dog"])],
+            "CAT",
+            np.array([False, False]),
+            id="str-case-sensitive",
+        ),
+    ],
+)
+def test_multi_equal_to_str_value(
+    arrays: list[np.ndarray], value: str, expected: np.ndarray
+) -> None:
+    assert objects_are_equal(multi_equal_to(arrays, value=value), expected)
+
+
+# --- NaN ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "expected"),
+    [
+        pytest.param(
+            [np.array([1.0, float("nan"), 3.0]), np.array([4.0, 5.0, 6.0])],
+            np.array([False, True, False]),
+            id="float-nan-in-first",
+        ),
+        pytest.param(
+            [np.array([1.0, 2.0, 3.0]), np.array([4.0, float("nan"), 6.0])],
+            np.array([False, True, False]),
+            id="float-nan-in-second",
+        ),
+        pytest.param(
+            [np.array([1.0, float("nan"), 3.0]), np.array([float("nan"), 5.0, 6.0])],
+            np.array([True, True, False]),
+            id="float-nan-in-both",
+        ),
+        pytest.param(
+            [np.array([1.0, float("nan"), 3.0]), np.array([4.0, float("nan"), 6.0])],
+            np.array([False, True, False]),
+            id="float-nan-overlap",
+        ),
+        pytest.param(
+            [np.array([1.0, 2.0, 3.0]), np.array([4.0, 5.0, 6.0])],
+            np.array([False, False, False]),
+            id="float-no-nan",
+        ),
+        pytest.param(
+            [
+                np.array([1, float("nan"), 0], dtype=object),
+                np.array([float("nan"), 2, 0], dtype=object),
+            ],
+            np.array([True, True, False]),
+            id="object-nan-in-both",
+        ),
+        pytest.param(
+            [
+                np.array([1, None, 3], dtype=object),
+                np.array([4, 5, 6], dtype=object),
+            ],
+            np.array([False, False, False]),
+            id="object-none-not-nan",
+        ),
+    ],
+)
+def test_multi_equal_to_nan(arrays: list[np.ndarray], expected: np.ndarray) -> None:
+    assert objects_are_equal(multi_equal_to(arrays, value=float("nan")), expected)
+
+
+# --- None ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "expected"),
+    [
+        pytest.param(
+            [np.array([1, None, 3], dtype=object), np.array([4, 5, 6], dtype=object)],
+            np.array([False, True, False]),
+            id="none-in-first",
+        ),
+        pytest.param(
+            [np.array([1, 2, 3], dtype=object), np.array([4, None, 6], dtype=object)],
+            np.array([False, True, False]),
+            id="none-in-second",
+        ),
+        pytest.param(
+            [np.array([None, 2, 3], dtype=object), np.array([4, None, 6], dtype=object)],
+            np.array([True, True, False]),
+            id="none-in-both",
+        ),
+        pytest.param(
+            [np.array([1, 2, 3], dtype=object), np.array([4, 5, 6], dtype=object)],
+            np.array([False, False, False]),
+            id="none-absent",
+        ),
+        pytest.param(
+            [np.array([0, False, ""], dtype=object), np.array([1, 2, 3], dtype=object)],
+            np.array([False, False, False]),
+            id="none-not-confused-with-falsy",
+        ),
+        pytest.param(
+            [np.array([1, 2, 3]), np.array([4, 5, 6])],
+            np.array([False, False, False]),
+            id="none-non-object-arrays",
+        ),
+    ],
+)
+def test_multi_equal_to_none(arrays: list[np.ndarray], expected: np.ndarray) -> None:
+    assert objects_are_equal(multi_equal_to(arrays, value=None), expected)
+
+
+# --- inf ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "value", "expected"),
+    [
+        pytest.param(
+            [np.array([1.0, float("inf"), 3.0]), np.array([4.0, 5.0, 6.0])],
+            float("inf"),
+            np.array([False, True, False]),
+            id="pos-inf-in-first",
+        ),
+        pytest.param(
+            [np.array([1.0, 2.0, 3.0]), np.array([4.0, float("inf"), 6.0])],
+            float("inf"),
+            np.array([False, True, False]),
+            id="pos-inf-in-second",
+        ),
+        pytest.param(
+            [np.array([1.0, float("-inf"), 3.0]), np.array([4.0, 5.0, 6.0])],
+            float("-inf"),
+            np.array([False, True, False]),
+            id="neg-inf-in-first",
+        ),
+        pytest.param(
+            [np.array([float("inf"), 2.0, 3.0]), np.array([4.0, float("-inf"), 6.0])],
+            float("inf"),
+            np.array([True, False, False]),
+            id="pos-inf-not-confused-with-neg-inf",
+        ),
+        pytest.param(
+            [np.array([float("inf"), 2.0, 3.0]), np.array([4.0, float("-inf"), 6.0])],
+            float("-inf"),
+            np.array([False, True, False]),
+            id="neg-inf-not-confused-with-pos-inf",
+        ),
+        pytest.param(
+            [np.array([1.0, 2.0, 3.0]), np.array([4.0, 5.0, 6.0])],
+            float("inf"),
+            np.array([False, False, False]),
+            id="inf-absent",
+        ),
+    ],
+)
+def test_multi_equal_to_inf(arrays: list[np.ndarray], value: float, expected: np.ndarray) -> None:
+    assert objects_are_equal(multi_equal_to(arrays, value=value), expected)
+
+
+# --- output properties ---
+
+
+def test_multi_equal_to_returns_bool_dtype() -> None:
+    result = multi_equal_to([np.array([1.0, 2.0])], value=2.0)
+    assert result.dtype == bool
+
+
+def test_multi_equal_to_preserves_shape() -> None:
+    arrays = [np.array([1.0, 2.0, 3.0]), np.array([4.0, 5.0, 6.0])]
+    assert multi_equal_to(arrays, value=2.0).shape == arrays[0].shape
+
+
+def test_multi_equal_to_2d_arrays() -> None:
+    assert objects_are_equal(
+        multi_equal_to(
+            [np.array([[1, 2], [3, 4]]), np.array([[4, 3], [2, 1]])],
+            value=2,
+        ),
+        np.array([[False, True], [True, False]]),
+    )
+
+
+def test_multi_equal_to_output_length_matches_input_length() -> None:
+    arrays = [np.array([1.0, 2.0, 3.0]), np.array([4.0, 5.0, 6.0])]
+    assert len(multi_equal_to(arrays, value=2.0)) == len(arrays[0])
+
+
+# --- empty input raises ---
+
+
+def test_multi_equal_to_empty_input_raises() -> None:
+    with pytest.raises(ValueError, match="'arrays' cannot be empty"):
+        multi_equal_to([], value=2)
+
+
+# --- edge cases ---
+
+
+def test_multi_equal_to_empty_arrays() -> None:
+    assert objects_are_equal(
+        multi_equal_to([np.array([], dtype=float), np.array([], dtype=float)], value=1.0),
+        np.array([], dtype=bool),
+    )
+
+
+def test_multi_equal_to_single_element_match() -> None:
+    assert objects_are_equal(
+        multi_equal_to([np.array([2.0]), np.array([1.0])], value=2.0),
+        np.array([True]),
+    )
+
+
+def test_multi_equal_to_single_element_no_match() -> None:
+    assert objects_are_equal(
+        multi_equal_to([np.array([1.0]), np.array([3.0])], value=2.0),
+        np.array([False]),
+    )
+
+
+def test_multi_equal_to_all_match() -> None:
+    assert objects_are_equal(
+        multi_equal_to([np.array([2, 2, 2]), np.array([2, 2, 2])], value=2),
+        np.array([True, True, True]),
+    )
+
+
+def test_multi_equal_to_three_arrays_combined() -> None:
+    assert objects_are_equal(
+        multi_equal_to(
+            [
+                np.array([1.0, float("nan"), 3.0]),
+                np.array([4.0, 5.0, float("nan")]),
+                np.array([float("nan"), 8.0, 9.0]),
+            ],
+            value=float("nan"),
+        ),
+        np.array([True, True, True]),
+    )
