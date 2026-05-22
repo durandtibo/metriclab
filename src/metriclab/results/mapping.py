@@ -44,7 +44,6 @@ class ResultDict(BaseResult):
         >>> print(result.to_display())
         === train ===
         {'loss': 0.5}
-
         === val ===
         {'loss': 0.3}
 
