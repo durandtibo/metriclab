@@ -45,7 +45,7 @@ def preprocess_1d(
 
     Returns:
         A list of preprocessed arrays with the same order as the
-        input. Returns an empty list when ``arrays`` is empty.
+            input. Returns an empty list when ``arrays`` is empty.
 
     Raises:
         ValueError: if ``missing_policy`` is invalid.
