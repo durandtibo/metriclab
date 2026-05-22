@@ -8,9 +8,9 @@ from coola.equality import objects_are_allclose
 
 from metriclab.results import BalancedAccuracyResult
 
-##################################################
-#     Tests for BalancedAccuracyResult           #
-##################################################
+############################################
+#     Tests for BalancedAccuracyResult     #
+############################################
 
 
 # --- instantiation ---

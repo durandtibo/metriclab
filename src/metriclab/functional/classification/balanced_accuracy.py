@@ -1,17 +1,19 @@
 r"""Compute classification accuracy from array-like inputs.
 
-This module powers :func:`metriclab.functional.accuracy` and supports
+This module powers :func:`metriclab.functional.balanced_accuracy` and supports
 NumPy arrays, and Python sequences.
 """
 
 from __future__ import annotations
 
-__all__ = ["accuracy"]
+__all__ = ["balanced_accuracy"]
 
 from typing import TYPE_CHECKING, Any
 
+from sklearn.metrics import balanced_accuracy_score
+
 from metriclab.exceptions import EmptyMetricError
-from metriclab.results import AccuracyResult
+from metriclab.results import BalancedAccuracyResult
 from metriclab.utils.array import multi_contains_value, preprocess_1d, to_numpy_1d
 from metriclab.utils.sentinel import NOT_SET
 
@@ -20,14 +22,14 @@ if TYPE_CHECKING:
     from metriclab.utils.missing import MissingPolicy
 
 
-def accuracy(
+def balanced_accuracy(
     y_true: ArrayLike,
     y_pred: ArrayLike,
     *,
     missing_policy: MissingPolicy = "propagate",
     missing_values: Any = NOT_SET,
     raise_empty: bool = True,
-) -> AccuracyResult:
+) -> BalancedAccuracyResult:
     r"""Compute the accuracy score.
 
     Args:
@@ -46,7 +48,7 @@ def accuracy(
             ``missing_policy``.
         raise_empty: If ``True``, raises ``EmptyMetricError`` when
             there are no valid predictions. If ``False``, returns an
-            ``AccuracyResult`` with ``num_predictions=0``.
+            ``BalancedAccuracyResult`` with ``num_predictions=0``.
 
     Returns:
         The accuracy result. When missing values are present and
@@ -64,40 +66,40 @@ def accuracy(
     Example:
     ```pycon
     >>> import numpy as np
-    >>> from metriclab.functional import accuracy
+    >>> from metriclab.functional import balanced_accuracy
     >>> # with numpy arrays
-    >>> accuracy(
+    >>> balanced_accuracy(
     ...     y_true=np.array([1, 0, 0, 1, 1]),
     ...     y_pred=np.array([1, 0, 0, 1, 1]),
     ... )
-    AccuracyResult(num_correct_predictions=5, num_predictions=5)
+    BalancedAccuracyResult(num_correct_predictions=5, num_predictions=5)
     >>> # with lists
-    >>> accuracy(y_true=[1, 0, 0, 1, 1], y_pred=[1, 0, 1, 1, 1])
-    AccuracyResult(num_correct_predictions=4, num_predictions=5)
+    >>> balanced_accuracy(y_true=[1, 0, 0, 1, 1], y_pred=[1, 0, 1, 1, 1])
+    BalancedAccuracyResult(num_correct_predictions=4, num_predictions=5)
     >>> # with string labels
-    >>> accuracy(
+    >>> balanced_accuracy(
     ...     y_true=["cat", "dog", "cat", "dog"],
     ...     y_pred=["cat", "dog", "dog", "dog"],
     ... )
-    AccuracyResult(num_correct_predictions=3, num_predictions=4)
+    BalancedAccuracyResult(num_correct_predictions=3, num_predictions=4)
     >>> # with missing values and missing_policy='propagate' (default)
-    >>> accuracy(
+    >>> balanced_accuracy(
     ...     y_true=np.array([1.0, 0.0, 0.0, 1.0, float("nan")]),
     ...     y_pred=np.array([1.0, 0.0, 0.0, 1.0, 1.0]),
     ...     missing_values=float("nan"),
     ... )
-    AccuracyResult(num_correct_predictions=nan, num_predictions=5)
+    BalancedAccuracyResult(num_correct_predictions=nan, num_predictions=5)
     >>> # with missing values and missing_policy='omit'
-    >>> accuracy(
+    >>> balanced_accuracy(
     ...     y_true=np.array([1.0, 0.0, 0.0, 1.0, float("nan")]),
     ...     y_pred=np.array([1.0, 0.0, 0.0, 1.0, 1.0]),
     ...     missing_policy="omit",
     ...     missing_values=float("nan"),
     ... )
-    AccuracyResult(num_correct_predictions=4, num_predictions=4)
+    BalancedAccuracyResult(num_correct_predictions=4, num_predictions=4)
     >>> # allow empty result instead of raising
-    >>> accuracy(y_true=[], y_pred=[], raise_empty=False)
-    AccuracyResult(num_correct_predictions=nan, num_predictions=0)
+    >>> balanced_accuracy(y_true=[], y_pred=[], raise_empty=False)
+    BalancedAccuracyResult(num_correct_predictions=nan, num_predictions=0)
 
     ```
     """
@@ -115,8 +117,8 @@ def accuracy(
                 "Use 'raise_empty=False' to return a result with 'num_predictions=0' instead."
             )
             raise EmptyMetricError(msg)
-        return AccuracyResult(
-            num_correct_predictions=float("nan"),
+        return BalancedAccuracyResult(
+            balanced_accuracy=float("nan"),
             num_predictions=0,
         )
 
@@ -130,12 +132,12 @@ def accuracy(
         and multi_contains_value([y_true, y_pred], value=missing_values)
     )
     if has_missing:
-        return AccuracyResult(
-            num_correct_predictions=float("nan"),
+        return BalancedAccuracyResult(
+            balanced_accuracy=float("nan"),
             num_predictions=num_predictions,
         )
 
-    return AccuracyResult(
-        num_correct_predictions=int((y_true == y_pred).sum()),
+    return BalancedAccuracyResult(
+        balanced_accuracy=balanced_accuracy_score(y_true=y_true, y_pred=y_pred),
         num_predictions=num_predictions,
     )

@@ -6,6 +6,7 @@ directly from inputs without storing intermediate state.
 
 from __future__ import annotations
 
-__all__ = ["accuracy"]
+__all__ = ["accuracy", "balanced_accuracy"]
 
 from metriclab.functional.classification.accuracy import accuracy
+from metriclab.functional.classification.balanced_accuracy import balanced_accuracy
