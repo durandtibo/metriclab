@@ -170,7 +170,7 @@ def multi_is_nan(arrays: Sequence[np.ndarray]) -> np.ndarray:
 
     Returns:
         A boolean array. ``True`` where any array has a missing value,
-        ``False`` otherwise.
+            ``False`` otherwise.
 
     Raises:
         ValueError: if ``arrays`` is empty.

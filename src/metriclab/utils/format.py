@@ -24,9 +24,9 @@ def make_robust_bar(value: float, length: int = 10) -> str:
 
     Returns:
         A string of the form ``'[{bar}]'`` where ``{bar}`` is
-        ``length`` characters wide. Finite values produce a mix of
-        ``'█'`` and ``'░'`` characters. NaN and infinite values
-        produce ``'?'`` characters.
+            ``length`` characters wide. Finite values produce a mix of
+            ``'█'`` and ``'░'`` characters. NaN and infinite values
+            produce ``'?'`` characters.
 
     Raises:
         ValueError: if ``length`` is not a positive integer.

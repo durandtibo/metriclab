@@ -29,7 +29,7 @@ def equal_to(arr: np.ndarray, value: Any) -> np.ndarray:
 
     Returns:
         A boolean array of the same shape as ``arr`` where ``True``
-        indicates the element equals ``value``.
+            indicates the element equals ``value``.
 
     Example:
         ```pycon
@@ -70,8 +70,8 @@ def multi_equal_to(arrays: Sequence[np.ndarray], value: Any) -> np.ndarray:
 
     Returns:
         A boolean array of the same shape as the input arrays.
-        ``True`` where any array has an element equal to ``value``,
-        ``False`` otherwise.
+            ``True`` where any array has an element equal to ``value``,
+            ``False`` otherwise.
 
     Raises:
         ValueError: if ``arrays`` is empty.

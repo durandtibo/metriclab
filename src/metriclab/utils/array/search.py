@@ -76,8 +76,7 @@ def multi_contains_value(arrays: Sequence[np.ndarray], value: Any) -> bool:
         value: The value to search for.
 
     Returns:
-        ``True`` if ``value`` is present in any array,
-        ``False`` otherwise.
+        ``True`` if ``value`` is present in any array, ``False`` otherwise.
 
     Raises:
         ValueError: if ``arrays`` is empty.

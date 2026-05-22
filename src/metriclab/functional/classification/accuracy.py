@@ -50,9 +50,9 @@ def accuracy(
 
     Returns:
         The accuracy result. When missing values are present and
-        ``missing_policy='propagate'``, the result keeps
-        ``num_predictions`` and sets ``num_correct_predictions`` to
-        ``nan``.
+            ``missing_policy='propagate'``, the result keeps
+            ``num_predictions`` and sets ``num_correct_predictions`` to
+            ``nan``.
 
     Raises:
         EmptyMetricError: if there are no valid predictions and
