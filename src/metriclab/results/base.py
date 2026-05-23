@@ -7,7 +7,7 @@ __all__ = ["BaseResult"]
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
 
-from coola.equality.tester import EqualNanEqualityTester, get_default_registry
+from coola.equality.tester import TolerantEqualEqualityTester, get_default_registry
 
 if TYPE_CHECKING:
     from typing import Self
@@ -154,4 +154,4 @@ class BaseResult(ABC):
         """
 
 
-get_default_registry().register(BaseResult, EqualNanEqualityTester(), exist_ok=True)
+get_default_registry().register(BaseResult, TolerantEqualEqualityTester(), exist_ok=True)
