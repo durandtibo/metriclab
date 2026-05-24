@@ -72,23 +72,23 @@ def balanced_accuracy(
     ...     y_true=np.array([1, 0, 0, 1, 1]),
     ...     y_pred=np.array([1, 0, 0, 1, 1]),
     ... )
-    BalancedAccuracyResult(num_correct_predictions=5, num_predictions=5)
+    BalancedAccuracyResult(balanced_accuracy=1.0, num_predictions=5)
     >>> # with lists
     >>> balanced_accuracy(y_true=[1, 0, 0, 1, 1], y_pred=[1, 0, 1, 1, 1])
-    BalancedAccuracyResult(num_correct_predictions=4, num_predictions=5)
+    BalancedAccuracyResult(balanced_accuracy=0.75, num_predictions=5)
     >>> # with string labels
     >>> balanced_accuracy(
     ...     y_true=["cat", "dog", "cat", "dog"],
     ...     y_pred=["cat", "dog", "dog", "dog"],
     ... )
-    BalancedAccuracyResult(num_correct_predictions=3, num_predictions=4)
+    BalancedAccuracyResult(balanced_accuracy=0.75, num_predictions=4)
     >>> # with missing values and missing_policy='propagate' (default)
     >>> balanced_accuracy(
     ...     y_true=np.array([1.0, 0.0, 0.0, 1.0, float("nan")]),
     ...     y_pred=np.array([1.0, 0.0, 0.0, 1.0, 1.0]),
     ...     missing_values=float("nan"),
     ... )
-    BalancedAccuracyResult(num_correct_predictions=nan, num_predictions=5)
+    BalancedAccuracyResult(balanced_accuracy=nan, num_predictions=5)
     >>> # with missing values and missing_policy='omit'
     >>> balanced_accuracy(
     ...     y_true=np.array([1.0, 0.0, 0.0, 1.0, float("nan")]),
@@ -96,10 +96,10 @@ def balanced_accuracy(
     ...     missing_policy="omit",
     ...     missing_values=float("nan"),
     ... )
-    BalancedAccuracyResult(num_correct_predictions=4, num_predictions=4)
+    BalancedAccuracyResult(balanced_accuracy=1.0, num_predictions=4)
     >>> # allow empty result instead of raising
     >>> balanced_accuracy(y_true=[], y_pred=[], raise_empty=False)
-    BalancedAccuracyResult(num_correct_predictions=nan, num_predictions=0)
+    BalancedAccuracyResult(balanced_accuracy=nan, num_predictions=0)
 
     ```
     """
