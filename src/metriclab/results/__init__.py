@@ -15,10 +15,18 @@ Example:
 
 from __future__ import annotations
 
-__all__ = ["AccuracyResult", "BalancedAccuracyResult", "BaseResult", "Result", "ResultDict"]
+__all__ = [
+    "AccuracyResult",
+    "BalancedAccuracyResult",
+    "BaseResult",
+    "PrecisionResult",
+    "Result",
+    "ResultDict",
+]
 
 from metriclab.results.base import BaseResult
 from metriclab.results.classification.accuracy import AccuracyResult
 from metriclab.results.classification.balanced_accuracy import BalancedAccuracyResult
+from metriclab.results.classification.precision import PrecisionResult
 from metriclab.results.mapping import ResultDict
 from metriclab.results.vanilla import Result
