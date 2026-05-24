@@ -138,6 +138,6 @@ def balanced_accuracy(
         )
 
     return BalancedAccuracyResult(
-        balanced_accuracy=balanced_accuracy_score(y_true=y_true, y_pred=y_pred),
+        balanced_accuracy=float(balanced_accuracy_score(y_true=y_true, y_pred=y_pred)),
         num_predictions=num_predictions,
     )
