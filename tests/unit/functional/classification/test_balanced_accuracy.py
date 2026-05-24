@@ -121,7 +121,7 @@ def test_balanced_accuracy_matches_sklearn() -> None:
 
     y_true = np.array([0, 0, 0, 1, 1, 2, 2, 2])
     y_pred = np.array([0, 0, 1, 1, 0, 2, 2, 0])
-    expected = balanced_accuracy_score(y_true=y_true, y_pred=y_pred)
+    expected = float(balanced_accuracy_score(y_true=y_true, y_pred=y_pred))
     result = balanced_accuracy(y_true=y_true, y_pred=y_pred)
     assert result.allclose(
         BalancedAccuracyResult(balanced_accuracy=expected, num_predictions=len(y_true))
@@ -133,7 +133,7 @@ def test_balanced_accuracy_imbalanced_matches_sklearn() -> None:
 
     y_true = np.array([0, 0, 0, 0, 0, 1])
     y_pred = np.array([0, 0, 0, 0, 0, 0])
-    expected = balanced_accuracy_score(y_true=y_true, y_pred=y_pred)
+    expected = float(balanced_accuracy_score(y_true=y_true, y_pred=y_pred))
     result = balanced_accuracy(y_true=y_true, y_pred=y_pred)
     assert result.allclose(
         BalancedAccuracyResult(balanced_accuracy=expected, num_predictions=len(y_true))
