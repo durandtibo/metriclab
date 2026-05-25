@@ -7,6 +7,7 @@ import pytest
 from coola.equality import objects_are_allclose
 
 from metriclab.results import RecallResult
+from metriclab.results.classification.recall import compute_recall
 
 ##################################
 #    Tests for RecallResult      #
@@ -416,3 +417,44 @@ def test_recall_result_to_display_large_numbers() -> None:
     assert RecallResult(num_true_positives=1500, num_actual_positives=2500).to_display() == (
         "Recall [████████████░░░░░░░░]  0.6000  (1,500/2,500)"
     )
+
+
+####################################
+#     Tests for compute_recall     #
+####################################
+
+
+@pytest.mark.parametrize(
+    ("true_positives", "false_negatives", "expected"),
+    [
+        pytest.param(3, 2, 0.6, id="standard"),
+        pytest.param(5, 0, 1.0, id="no-false-negatives"),
+        pytest.param(0, 5, 0.0, id="no-true-positives"),
+        pytest.param(1, 1, 0.5, id="equal-tp-fn"),
+    ],
+)
+def test_compute_recall(
+    true_positives: float,
+    false_negatives: float,
+    expected: float,
+) -> None:
+    assert compute_recall(true_positives, false_negatives) == expected
+
+
+def test_compute_recall_zero_denominator() -> None:
+    assert compute_recall(true_positives=0, false_negatives=0) == 0.0
+
+
+@pytest.mark.parametrize(
+    ("true_positives", "false_negatives"),
+    [
+        pytest.param(float("nan"), 2, id="nan-tp"),
+        pytest.param(3, float("nan"), id="nan-fn"),
+        pytest.param(float("nan"), float("nan"), id="nan-all"),
+    ],
+)
+def test_compute_recall_nan(
+    true_positives: float,
+    false_negatives: float,
+) -> None:
+    assert math.isnan(compute_recall(true_positives, false_negatives))
