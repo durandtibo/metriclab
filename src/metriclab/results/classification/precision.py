@@ -2,7 +2,7 @@ r"""Precision result implementation."""
 
 from __future__ import annotations
 
-__all__ = ["PrecisionResult"]
+__all__ = ["PrecisionResult", "compute_precision"]
 
 import math
 from dataclasses import asdict, dataclass
@@ -172,3 +172,40 @@ class PrecisionResult(BaseResult):
             num_true_positives=round(precision * num_positive_predictions),
             num_positive_predictions=num_positive_predictions,
         )
+
+
+def compute_precision(
+    true_positives: float,
+    false_positives: float,
+) -> float:
+    r"""Compute the precision score.
+
+    Precision measures the proportion of true positives among all
+    positive predictions.
+
+    Args:
+        true_positives: The number of true positives, or ``nan``.
+        false_positives: The number of false positives, or ``nan``.
+
+    Returns:
+        The ratio ``true_positives / (true_positives + false_positives)``.
+        Returns ``nan`` when either ``true_positives`` or
+        ``false_positives`` is ``nan``. Returns ``0.0`` when
+        ``true_positives + false_positives`` is ``0``.
+
+    Example:
+        ```pycon
+        >>> from metriclab.results.classification.precision import compute_precision
+        >>> compute_precision(true_positives=3, false_positives=1)
+        0.75
+        >>> compute_precision(true_positives=0, false_positives=0)
+        0.0
+        >>> compute_precision(true_positives=float("nan"), false_positives=1)
+        nan
+
+        ```
+    """
+    if math.isnan(true_positives) or math.isnan(false_positives):
+        return float("nan")
+    denominator = true_positives + false_positives
+    return true_positives / denominator if denominator > 0 else 0.0

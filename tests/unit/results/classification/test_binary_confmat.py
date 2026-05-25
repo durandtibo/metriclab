@@ -11,7 +11,6 @@ from metriclab.results import BinaryConfusionMatrixResult
 from metriclab.results.classification.binary_confmat import (
     check_betas,
     compute_f_beta_score,
-    compute_precision,
     compute_recall,
     compute_specificity,
     f_beta_label,
@@ -61,47 +60,6 @@ def test_check_betas_valid(betas: Sequence[float]) -> None:
 def test_check_betas_invalid(betas: Sequence[float], match: str) -> None:
     with pytest.raises(ValueError, match=match):
         check_betas(betas)
-
-
-########################################
-#     Tests for compute_precision      #
-########################################
-
-
-@pytest.mark.parametrize(
-    ("true_positives", "false_positives", "expected"),
-    [
-        pytest.param(3, 1, 0.75, id="standard"),
-        pytest.param(5, 0, 1.0, id="no-false-positives"),
-        pytest.param(0, 5, 0.0, id="no-true-positives"),
-        pytest.param(1, 1, 0.5, id="equal-tp-fp"),
-    ],
-)
-def test_compute_precision(
-    true_positives: float,
-    false_positives: float,
-    expected: float,
-) -> None:
-    assert compute_precision(true_positives, false_positives) == expected
-
-
-def test_compute_precision_zero_denominator() -> None:
-    assert compute_precision(true_positives=0, false_positives=0) == 0.0
-
-
-@pytest.mark.parametrize(
-    ("true_positives", "false_positives"),
-    [
-        pytest.param(float("nan"), 1, id="nan-tp"),
-        pytest.param(3, float("nan"), id="nan-fp"),
-        pytest.param(float("nan"), float("nan"), id="nan-all"),
-    ],
-)
-def test_compute_precision_nan(
-    true_positives: float,
-    false_positives: float,
-) -> None:
-    assert math.isnan(compute_precision(true_positives, false_positives))
 
 
 ####################################
