@@ -338,12 +338,16 @@ class BinaryConfusionMatrixResult(BaseResult):
             ```pycon
             >>> from metriclab.results import BinaryConfusionMatrixResult
             >>> r1 = BinaryConfusionMatrixResult.from_confusion_matrix(
-            ...     true_positives=3, true_negatives=4,
-            ...     false_positives=1, false_negatives=2,
+            ...     true_positives=3,
+            ...     true_negatives=4,
+            ...     false_positives=1,
+            ...     false_negatives=2,
             ... )
             >>> r2 = BinaryConfusionMatrixResult.from_confusion_matrix(
-            ...     true_positives=2, true_negatives=3,
-            ...     false_positives=0, false_negatives=1,
+            ...     true_positives=2,
+            ...     true_negatives=3,
+            ...     false_positives=0,
+            ...     false_negatives=1,
             ... )
             >>> r1.combine(r2).num_predictions
             16

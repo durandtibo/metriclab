@@ -14,8 +14,9 @@ def test_empty_metric_error_is_exception() -> None:
 
 
 def test_empty_metric_error_can_be_raised_and_caught() -> None:
-    with pytest.raises(EmptyMetricError):
-        raise EmptyMetricError("no predictions")
+    msg = "no predictions"
+    with pytest.raises(EmptyMetricError, match=msg):
+        raise EmptyMetricError(msg)
 
 
 def test_empty_metric_error_stores_message() -> None:
@@ -25,5 +26,6 @@ def test_empty_metric_error_stores_message() -> None:
 
 
 def test_empty_metric_error_can_be_caught_as_exception() -> None:
-    with pytest.raises(Exception):
-        raise EmptyMetricError("no predictions")
+    msg = "no predictions"
+    with pytest.raises(Exception, match=msg):
+        raise EmptyMetricError(msg)
