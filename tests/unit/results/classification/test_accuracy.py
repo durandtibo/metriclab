@@ -54,7 +54,7 @@ def test_accuracy_result_repr() -> None:
 
 def test_accuracy_result_str() -> None:
     assert (
-        repr(AccuracyResult(num_correct_predictions=7, num_predictions=10))
+        str(AccuracyResult(num_correct_predictions=7, num_predictions=10))
         == "AccuracyResult(num_correct_predictions=7, num_predictions=10)"
     )
 
@@ -122,6 +122,21 @@ def test_accuracy_result_allclose_atol() -> None:
 def test_accuracy_result_allclose_rtol() -> None:
     assert AccuracyResult(num_correct_predictions=7, num_predictions=10).allclose(
         AccuracyResult(num_correct_predictions=7, num_predictions=10), rtol=1e-3
+    )
+
+
+def test_accuracy_result_allclose_nan_false_by_default() -> None:
+    assert not AccuracyResult(
+        num_correct_predictions=float("nan"), num_predictions=10
+    ).allclose(AccuracyResult(num_correct_predictions=float("nan"), num_predictions=10))
+
+
+def test_accuracy_result_allclose_nan_true_with_equal_nan() -> None:
+    assert AccuracyResult(
+        num_correct_predictions=float("nan"), num_predictions=10
+    ).allclose(
+        AccuracyResult(num_correct_predictions=float("nan"), num_predictions=10),
+        equal_nan=True,
     )
 
 

@@ -472,3 +472,19 @@ def test_balanced_accuracy_all_same_label() -> None:
     )
     assert result.num_predictions == 4
     assert not math.isnan(result.balanced_accuracy)
+
+
+# --- invalid inputs ---
+
+
+def test_balanced_accuracy_shape_mismatch_raises() -> None:
+    with pytest.raises(ValueError, match="arrays have different shapes"):
+        balanced_accuracy(y_true=np.array([1, 0, 1]), y_pred=np.array([1, 0]))
+
+
+def test_balanced_accuracy_2d_input_raises() -> None:
+    with pytest.raises(ValueError, match="expected 1D array"):
+        balanced_accuracy(
+            y_true=np.array([[1, 0], [1, 0]]),
+            y_pred=np.array([[1, 0], [1, 0]]),
+        )

@@ -419,6 +419,23 @@ def test_recall_result_to_display_large_numbers() -> None:
     )
 
 
+# --- repr / str ---
+
+
+def test_recall_result_repr() -> None:
+    assert (
+        repr(RecallResult(num_true_positives=3, num_actual_positives=5))
+        == "RecallResult(num_true_positives=3, num_actual_positives=5)"
+    )
+
+
+def test_recall_result_str() -> None:
+    assert (
+        str(RecallResult(num_true_positives=3, num_actual_positives=5))
+        == "RecallResult(num_true_positives=3, num_actual_positives=5)"
+    )
+
+
 ####################################
 #     Tests for compute_recall     #
 ####################################

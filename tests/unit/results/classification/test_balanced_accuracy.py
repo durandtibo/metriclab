@@ -299,3 +299,20 @@ def test_balanced_accuracy_result_to_display_returns_str() -> None:
     assert isinstance(
         BalancedAccuracyResult(balanced_accuracy=0.7, num_predictions=10).to_display(), str
     )
+
+
+# --- repr / str ---
+
+
+def test_balanced_accuracy_result_repr() -> None:
+    assert (
+        repr(BalancedAccuracyResult(balanced_accuracy=0.7, num_predictions=10))
+        == "BalancedAccuracyResult(balanced_accuracy=0.7, num_predictions=10)"
+    )
+
+
+def test_balanced_accuracy_result_str() -> None:
+    assert (
+        str(BalancedAccuracyResult(balanced_accuracy=0.7, num_predictions=10))
+        == "BalancedAccuracyResult(balanced_accuracy=0.7, num_predictions=10)"
+    )

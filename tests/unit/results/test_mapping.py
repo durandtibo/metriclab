@@ -170,6 +170,12 @@ def test_result_dict_allclose_false_different_keys() -> None:
     )
 
 
+def test_result_dict_allclose_false_different_number_of_keys() -> None:
+    assert not ResultDict({"train": Result({"loss": 0.5}), "val": Result({"loss": 0.3})}).allclose(
+        ResultDict({"train": Result({"loss": 0.5})})
+    )
+
+
 def test_result_dict_allclose_wrong_type() -> None:
     assert not ResultDict({"train": Result({"loss": 0.5})}).allclose("not a result")
 
