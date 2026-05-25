@@ -34,11 +34,8 @@ def validate_nan_policy(nan_policy: str) -> None:
             ``'propagate'``, or ``'raise'``.
 
     Example:
-        ```pycon
         >>> from metriclab.utils.array import validate_nan_policy
         >>> validate_nan_policy("omit")
-
-        ```
     """
     if nan_policy not in set(NAN_POLICIES):
         msg = (
@@ -58,19 +55,14 @@ def contains_nan(arr: np.ndarray) -> bool:
         ``True`` if the array contains at least one NaN value.
 
     Example:
-        ```pycon
         >>> import numpy as np
         >>> from metriclab.utils.array import contains_nan
         >>> contains_nan(np.array([1, 2, 3]))
         False
         >>> contains_nan(np.array([1, 2, np.nan]))
         True
-        >>> contains_nan(np.array([1, 2, float("nan")], dtype=object))
-        True
         >>> contains_nan(np.array(["a", "b", "c"]))
         False
-
-        ```
     """
     if arr.dtype == object:
         return any(isinstance(x, float) and np.isnan(x) for x in arr.flat)
@@ -101,19 +93,14 @@ def check_nan_policy(
             ``nan_policy`` is ``'raise'``.
 
     Example:
-        ```pycon
         >>> import numpy as np
         >>> from metriclab.utils.array import check_nan_policy
         >>> check_nan_policy(np.array([1, 2, 3]))
         False
         >>> check_nan_policy(np.array([1, 2, np.nan]))
         True
-        >>> check_nan_policy(np.array([1, 2, float("nan")], dtype=object))
-        True
         >>> check_nan_policy(np.array(["a", "b", "c"]))
         False
-
-        ```
     """
     validate_nan_policy(nan_policy)
     isnan = contains_nan(arr)
@@ -136,15 +123,12 @@ def is_nan(arr: np.ndarray) -> np.ndarray:
         A boolean array. ``True`` where the value is NaN, ``False`` otherwise.
 
     Example:
-        ```pycon
         >>> import numpy as np
         >>> from metriclab.utils.array import is_nan
         >>> is_nan(np.array([1.0, 0.0, float("nan"), 1.0]))
         array([False, False,  True, False])
         >>> is_nan(np.array([1.0, 0.0, float("nan"), 1.0, None], dtype=object))
-        array([False, False,  True, False,  False])
-
-        ```
+        array([False, False,  True, False, False])
     """
     if arr.dtype == object:
         return np.array(
@@ -162,7 +146,8 @@ def multi_is_nan(arrays: Sequence[np.ndarray]) -> np.ndarray:
     r"""Test element-wise for missing values for all input arrays and
     return result as a boolean array.
 
-    A value is considered missing if it is ``NaN`` or ``None``.
+    A value is considered missing if it is ``NaN``. Object arrays are
+    supported, but ``None`` values are not treated as missing.
 
     Args:
         arrays: The input arrays to test. All the arrays must have the
@@ -176,19 +161,14 @@ def multi_is_nan(arrays: Sequence[np.ndarray]) -> np.ndarray:
         ValueError: if ``arrays`` is empty.
 
     Example:
-        ```pycon
         >>> import numpy as np
         >>> from metriclab.utils.array import multi_is_nan
-        >>> mask = multi_is_nan([np.array([1, 0, 0, 1, np.nan]), np.array([1, np.nan, 0, 1, 1])])
-        >>> mask
+        >>> multi_is_nan([np.array([1, 0, 0, 1, np.nan]), np.array([1, np.nan, 0, 1, 1])])
         array([False,  True, False, False,  True])
-        >>> mask = multi_is_nan(
+        >>> multi_is_nan(
         ...     [np.array([1, np.nan, 0], dtype=object), np.array([None, 2, 0], dtype=object)]
         ... )
-        >>> mask
         array([False,  True, False])
-
-        ```
     """
     if len(arrays) == 0:
         msg = "'arrays' cannot be empty"

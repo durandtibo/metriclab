@@ -18,7 +18,7 @@ def to_numpy(x: ArrayLike, name: str = "input") -> np.ndarray:
     r"""Convert an array-like object to a NumPy array.
 
     Supported input types are :class:`numpy.ndarray`,
-    :class:`polars.Series`, :class:`list`, and :class:`tuple`.
+    :class:`list`, and :class:`tuple`.
 
     Args:
         x: The array-like object to convert.
@@ -33,15 +33,11 @@ def to_numpy(x: ArrayLike, name: str = "input") -> np.ndarray:
         TypeError: If ``x`` is not a supported array-like type.
 
     Example:
-        ```pycon
-        >>> import numpy as np
         >>> from metriclab.utils.array import to_numpy
         >>> to_numpy([1, 2, 3])
         array([1, 2, 3])
         >>> to_numpy((1, 2, 3))
         array([1, 2, 3])
-
-        ```
     """
     if isinstance(x, np.ndarray):
         return x
@@ -71,13 +67,9 @@ def to_numpy_1d(x: ArrayLike, name: str = "input") -> np.ndarray:
             conversion.
 
     Example:
-        ```pycon
-        >>> import numpy as np
         >>> from metriclab.utils.array import to_numpy_1d
         >>> to_numpy_1d([1, 2, 3])
         array([1, 2, 3])
-
-        ```
     """
     arr = to_numpy(x, name=name)
     validate_array_ndim(arr, ndim=1, name=name)

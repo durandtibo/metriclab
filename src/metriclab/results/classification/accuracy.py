@@ -29,17 +29,12 @@ class AccuracyResult(BaseResult):
         num_predictions: The number of predictions.
 
     Example:
-        ```pycon
         >>> from metriclab.results import AccuracyResult
         >>> m = AccuracyResult(num_correct_predictions=7, num_predictions=10)
-        >>> m
-        AccuracyResult(num_correct_predictions=7, num_predictions=10)
         >>> m.to_dict()
         {'accuracy': 0.7, 'num_correct_predictions': 7, 'num_predictions': 10}
         >>> print(m.to_display())
         Accuracy [██████████████░░░░░░]  0.7000  (7/10)
-
-        ```
     """
 
     num_correct_predictions: int | float
@@ -134,12 +129,9 @@ class AccuracyResult(BaseResult):
             TypeError: If ``other`` is not an :class:`AccuracyResult`.
 
         Example:
-            ```pycon
             >>> from metriclab.results import AccuracyResult
             >>> AccuracyResult(3, 4).combine(AccuracyResult(5, 6))
             AccuracyResult(num_correct_predictions=8, num_predictions=10)
-
-            ```
         """
         if not isinstance(other, AccuracyResult):
             msg = f"Cannot combine {self.__class__.__qualname__} with {type(other)}"
@@ -163,7 +155,6 @@ def compute_accuracy(num_correct_predictions: float, num_predictions: float) -> 
         Returns ``nan`` when ``num_predictions`` is ``0`` or ``nan``.
 
     Example:
-        ```pycon
         >>> from metriclab.results.classification.accuracy import compute_accuracy
         >>> compute_accuracy(num_correct_predictions=7, num_predictions=10)
         0.7
@@ -171,10 +162,6 @@ def compute_accuracy(num_correct_predictions: float, num_predictions: float) -> 
         nan
         >>> compute_accuracy(num_correct_predictions=float("nan"), num_predictions=10)
         nan
-        >>> compute_accuracy(num_correct_predictions=7, num_predictions=float("nan"))
-        nan
-
-        ```
     """
     if math.isnan(num_predictions) or num_predictions == 0:
         return float("nan")

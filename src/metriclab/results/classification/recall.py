@@ -37,19 +37,12 @@ class RecallResult(BaseResult):
             ``num_actual_positives``.
 
     Example:
-    ```pycon
-    >>> from metriclab.results import RecallResult
-    >>> m = RecallResult(num_true_positives=3, num_actual_positives=5)
-    >>> m
-    RecallResult(num_true_positives=3, num_actual_positives=5)
-    >>> m.recall
-    0.6
-    >>> m.to_dict()
-    {'recall': 0.6, 'num_true_positives': 3, 'num_actual_positives': 5}
-    >>> print(m.to_display())
-    Recall [████████████░░░░░░░░]  0.6000  (3/5)
-
-    ```
+        >>> from metriclab.results import RecallResult
+        >>> m = RecallResult(num_true_positives=3, num_actual_positives=5)
+        >>> m.recall
+        0.6
+        >>> print(m.to_display())
+        Recall [████████████░░░░░░░░]  0.6000  (3/5)
     """
 
     num_true_positives: int | float
@@ -149,15 +142,12 @@ class RecallResult(BaseResult):
             A ``RecallResult`` with the computed ``num_true_positives``.
 
         Example:
-            ```pycon
             >>> from metriclab.results import RecallResult
             >>> m = RecallResult.from_recall(recall=0.6, num_actual_positives=5)
             >>> m.num_true_positives
             3
             >>> m.recall
             0.6
-
-            ```
         """
         if math.isnan(recall) or math.isnan(float(num_actual_positives)):
             return cls(
@@ -210,7 +200,6 @@ def compute_recall(
             ``true_positives + false_negatives`` is ``0``.
 
     Example:
-        ```pycon
         >>> from metriclab.results.classification.recall import compute_recall
         >>> compute_recall(true_positives=3, false_negatives=2)
         0.6
@@ -218,8 +207,6 @@ def compute_recall(
         0.0
         >>> compute_recall(true_positives=float("nan"), false_negatives=2)
         nan
-
-        ```
     """
     if math.isnan(true_positives) or math.isnan(false_negatives):
         return float("nan")

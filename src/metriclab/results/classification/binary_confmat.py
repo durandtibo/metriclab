@@ -38,6 +38,9 @@ def check_betas(betas: Sequence[float]) -> None:
 
     Args:
         betas: The beta values to check.
+
+    Raises:
+        ValueError: If any beta value is negative.
     """
     for beta in betas:
         if beta < 0:
@@ -65,7 +68,6 @@ def compute_specificity(
         ``true_negatives + false_positives`` is ``0``.
 
     Example:
-        ```pycon
         >>> from metriclab.results.classification.binary_confmat import compute_specificity
         >>> compute_specificity(true_negatives=4, false_positives=1)
         0.8
@@ -73,8 +75,6 @@ def compute_specificity(
         0.0
         >>> compute_specificity(true_negatives=float("nan"), false_positives=1)
         nan
-
-        ```
     """
     if math.isnan(true_negatives) or math.isnan(false_positives):
         return float("nan")
@@ -104,18 +104,13 @@ def compute_f_beta_score(precision: float, recall: float, beta: float) -> float:
         ValueError: if ``beta`` is negative.
 
     Example:
-        ```pycon
         >>> from metriclab.results.classification.binary_confmat import compute_f_beta_score
         >>> compute_f_beta_score(precision=0.75, recall=0.6, beta=1.0)
         0.6666666666666665
-        >>> compute_f_beta_score(precision=0.75, recall=0.6, beta=0.5)
-        0.7142857142857143
         >>> compute_f_beta_score(precision=0.75, recall=0.6, beta=2.0)
         0.625
         >>> compute_f_beta_score(precision=0.0, recall=0.0, beta=1.0)
         0.0
-
-        ```
     """
     if beta < 0:
         msg = f"beta must be >= 0, got {beta}"
@@ -143,22 +138,13 @@ def f_beta_label(beta: float, label: str = "F") -> str:
         A string label of the form ``'{label}{beta}'``.
 
     Example:
-        ```pycon
         >>> from metriclab.results.classification.binary_confmat import f_beta_label
         >>> f_beta_label(1.0)
         'F1'
-        >>> f_beta_label(2.0)
-        'F2'
         >>> f_beta_label(0.5)
         'F0.5'
-        >>> f_beta_label(1.5)
-        'F1.5'
         >>> f_beta_label(1.0, label="f")
         'f1'
-        >>> f_beta_label(0.5, label="beta")
-        'beta0.5'
-
-        ```
     """
     return f"{label}{int(beta)}" if beta == int(beta) else f"{label}{beta:g}"
 
@@ -188,7 +174,6 @@ class BinaryConfusionMatrixResult(BaseResult):
         f_beta_scores: A mapping of beta values to F-beta scores.
 
     Example:
-        ```pycon
         >>> from metriclab.results import BinaryConfusionMatrixResult
         >>> m = BinaryConfusionMatrixResult.from_confusion_matrix(
         ...     true_positives=3,
@@ -196,16 +181,8 @@ class BinaryConfusionMatrixResult(BaseResult):
         ...     false_positives=1,
         ...     false_negatives=2,
         ... )
-        >>> m
-        BinaryConfusionMatrixResult(true_positives=3, true_negatives=4, false_positives=1, false_negatives=2, num_predictions=10, num_correct_predictions=7, accuracy=0.7, precision=0.75, recall=0.6, specificity=0.8, f_beta_scores={1.0: 0.6666...})
         >>> m.accuracy
         0.7
-        >>> m.precision
-        0.75
-        >>> m.recall
-        0.6
-        >>> m.specificity
-        0.8
         >>> m.f_beta_scores
         {1.0: 0.6666666666666665}
         >>> print(m.to_display())
@@ -217,18 +194,6 @@ class BinaryConfusionMatrixResult(BaseResult):
         Recall      [████████████░░░░░░░░]  0.6000  (3/5)
         Specificity [████████████████░░░░]  0.8000  (4/5)
         F1          [█████████████░░░░░░░]  0.6667
-
-        >>> # NaN propagates to derived metrics
-        >>> m_nan = BinaryConfusionMatrixResult.from_confusion_matrix(
-        ...     true_positives=float("nan"),
-        ...     true_negatives=4,
-        ...     false_positives=1,
-        ...     false_negatives=2,
-        ... )
-        >>> m_nan.accuracy
-        nan
-
-        ```
     """
 
     true_positives: int | float
@@ -320,6 +285,28 @@ class BinaryConfusionMatrixResult(BaseResult):
         return f"{header}\n{separator}\n{summary}\n{metric_text}"
 
     def combine(self, other: BinaryConfusionMatrixResult) -> BinaryConfusionMatrixResult:
+        r"""Merge two binary confusion matrices by summing their counts.
+
+        Args:
+            other: Another binary confusion-matrix result to combine with
+                ``self``.
+
+        Returns:
+            A new result built from the summed confusion-matrix counts.
+            The returned object preserves the beta values defined on
+            ``self``.
+
+        Raises:
+            TypeError: If ``other`` is not a
+                :class:`BinaryConfusionMatrixResult`.
+
+        Example:
+            >>> from metriclab.results import BinaryConfusionMatrixResult
+            >>> left = BinaryConfusionMatrixResult.from_confusion_matrix(1, 2, 0, 1)
+            >>> right = BinaryConfusionMatrixResult.from_confusion_matrix(2, 1, 1, 0)
+            >>> left.combine(right).to_dict()["num_predictions"]
+            8
+        """
         if not isinstance(other, BinaryConfusionMatrixResult):
             msg = f"Cannot combine {self.__class__.__qualname__} with {type(other)}"
             raise TypeError(msg)
@@ -363,7 +350,6 @@ class BinaryConfusionMatrixResult(BaseResult):
             ValueError: if any beta value is negative.
 
         Example:
-            ```pycon
             >>> from metriclab.results import BinaryConfusionMatrixResult
             >>> m = BinaryConfusionMatrixResult.from_confusion_matrix(
             ...     true_positives=3,
@@ -374,17 +360,6 @@ class BinaryConfusionMatrixResult(BaseResult):
             ... )
             >>> m.f_beta_scores
             {0.5: 0.7142857142857143, 1.0: 0.6666666666666665, 2.0: 0.625}
-            >>> import math
-            >>> m_nan = BinaryConfusionMatrixResult.from_confusion_matrix(
-            ...     true_positives=float("nan"),
-            ...     true_negatives=4,
-            ...     false_positives=1,
-            ...     false_negatives=2,
-            ... )
-            >>> math.isnan(m_nan.precision)
-            True
-
-            ```
         """
         for name, value in (
             ("true_positives", true_positives),

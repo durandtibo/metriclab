@@ -20,20 +20,18 @@ from metriclab.results.base import BaseResult
 
 @dataclass(frozen=True)
 class ResultDict(BaseResult):
-    r"""Implement a result that is a container for a dict of results.
+    r"""Store named child results in an immutable mapping.
 
     Args:
         results: A mapping from string keys to :class:`BaseResult`
             instances. Each key typically identifies a dataset split or
             evaluation phase (e.g. ``"train"``, ``"val"``).
 
-    Note:
-        :meth:`to_markdown` renders one top-level bullet per key and
-        nests the child result markdown underneath it. Empty mappings
-        return ``"_No results available._"``.
+    The string representation and :meth:`to_display` method keep the
+    mapping structure visible by rendering each key alongside the child
+    result.
 
     Example:
-        ```pycon
         >>> from metriclab.results import Result, ResultDict
         >>> result = ResultDict({"train": Result({"loss": 0.5}), "val": Result({"loss": 0.3})})
         >>> result.to_dict()
@@ -41,10 +39,9 @@ class ResultDict(BaseResult):
         >>> print(result.to_display())
         === train ===
         {'loss': 0.5}
+        <BLANKLINE>
         === val ===
         {'loss': 0.3}
-
-        ```
     """
 
     results: dict[str, BaseResult]

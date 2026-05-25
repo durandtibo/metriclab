@@ -30,19 +30,17 @@ def balanced_accuracy(
     missing_values: Any = NOT_SET,
     raise_empty: bool = True,
 ) -> BalancedAccuracyResult:
-    r"""Compute the accuracy score.
+    r"""Compute balanced accuracy from ground-truth and predicted labels.
 
     Args:
         y_true: The ground truth target labels.
         y_pred: The predicted labels.
-        missing_policy: The policy for handling missing values.
-            Valid values are ``'omit'``, ``'propagate'``, or
-            ``'raise'``. ``'omit'`` removes rows where any array
-            equals ``missing_values`` before computing the metric.
-            ``'propagate'`` keeps the rows but returns
-            ``num_correct_predictions=nan`` when missing values are
-            detected. ``'raise'`` raises a ``ValueError`` if any
-            array contains ``missing_values``.
+        missing_policy: The policy for handling values equal to
+            ``missing_values``. ``"omit"`` removes rows where either
+            input contains the missing value before computing the metric.
+            ``"propagate"`` keeps the rows but returns a result with
+            ``balanced_accuracy=nan`` when missing values are detected.
+            ``"raise"`` raises ``ValueError`` instead.
         missing_values: The value to treat as missing. If not set,
             missing value handling is disabled regardless of
             ``missing_policy``.
@@ -51,10 +49,10 @@ def balanced_accuracy(
             ``BalancedAccuracyResult`` with ``num_predictions=0``.
 
     Returns:
-        The accuracy result. When missing values are present and
-            ``missing_policy='propagate'``, the result keeps
-            ``num_predictions`` and sets ``num_correct_predictions`` to
-            ``nan``.
+        A :class:`~metriclab.results.BalancedAccuracyResult`. When
+            ``missing_policy="propagate"`` finds missing values, the
+            result keeps ``num_predictions`` and sets
+            ``balanced_accuracy`` to ``nan``.
 
     Raises:
         EmptyMetricError: if there are no valid predictions and
@@ -64,44 +62,18 @@ def balanced_accuracy(
             ``missing_values`` and ``missing_policy`` is ``'raise'``.
 
     Example:
-    ```pycon
-    >>> import numpy as np
-    >>> from metriclab.functional import balanced_accuracy
-    >>> # with numpy arrays
-    >>> balanced_accuracy(
-    ...     y_true=np.array([1, 0, 0, 1, 1]),
-    ...     y_pred=np.array([1, 0, 0, 1, 1]),
-    ... )
-    BalancedAccuracyResult(balanced_accuracy=1.0, num_predictions=5)
-    >>> # with lists
-    >>> balanced_accuracy(y_true=[1, 0, 0, 1, 1], y_pred=[1, 0, 1, 1, 1])
-    BalancedAccuracyResult(balanced_accuracy=0.75, num_predictions=5)
-    >>> # with string labels
-    >>> balanced_accuracy(
-    ...     y_true=["cat", "dog", "cat", "dog"],
-    ...     y_pred=["cat", "dog", "dog", "dog"],
-    ... )
-    BalancedAccuracyResult(balanced_accuracy=0.75, num_predictions=4)
-    >>> # with missing values and missing_policy='propagate' (default)
-    >>> balanced_accuracy(
-    ...     y_true=np.array([1.0, 0.0, 0.0, 1.0, float("nan")]),
-    ...     y_pred=np.array([1.0, 0.0, 0.0, 1.0, 1.0]),
-    ...     missing_values=float("nan"),
-    ... )
-    BalancedAccuracyResult(balanced_accuracy=nan, num_predictions=5)
-    >>> # with missing values and missing_policy='omit'
-    >>> balanced_accuracy(
-    ...     y_true=np.array([1.0, 0.0, 0.0, 1.0, float("nan")]),
-    ...     y_pred=np.array([1.0, 0.0, 0.0, 1.0, 1.0]),
-    ...     missing_policy="omit",
-    ...     missing_values=float("nan"),
-    ... )
-    BalancedAccuracyResult(balanced_accuracy=1.0, num_predictions=4)
-    >>> # allow empty result instead of raising
-    >>> balanced_accuracy(y_true=[], y_pred=[], raise_empty=False)
-    BalancedAccuracyResult(balanced_accuracy=nan, num_predictions=0)
-
-    ```
+        >>> import numpy as np
+        >>> from metriclab.functional import balanced_accuracy
+        >>> balanced_accuracy(y_true=[1, 0, 0, 1, 1], y_pred=[1, 0, 1, 1, 1])
+        BalancedAccuracyResult(balanced_accuracy=0.75, num_predictions=5)
+        >>> balanced_accuracy(
+        ...     y_true=np.array([1.0, 0.0, 0.0, 1.0, float("nan")]),
+        ...     y_pred=np.array([1.0, 0.0, 0.0, 1.0, 1.0]),
+        ...     missing_values=float("nan"),
+        ... )
+        BalancedAccuracyResult(balanced_accuracy=nan, num_predictions=5)
+        >>> balanced_accuracy(y_true=[], y_pred=[], raise_empty=False)
+        BalancedAccuracyResult(balanced_accuracy=nan, num_predictions=0)
     """
     y_true, y_pred = preprocess_1d(
         arrays=[to_numpy_1d(y_true), to_numpy_1d(y_pred)],

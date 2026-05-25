@@ -526,4 +526,4 @@ git commit -am "Generate package versions"
 
 For detailed information about contributing to the project, including how to run tests locally and
 development setup,
-see [CONTRIBUTING.md](https://github.com/durandtibo/metriclab/blob/main/.github/CONTRIBUTING.md).
+see [CONTRIBUTING.md](https://github.com/durandtibo/metriclab/blob/main/CONTRIBUTING.md).

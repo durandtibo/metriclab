@@ -55,7 +55,7 @@ python -c "import metriclab; print(metriclab.__version__)"
 Or try a simple example:
 
 ```python
-from metriclab.functional.array import accuracy
+from metriclab.functional import accuracy
 
 result = accuracy(y_true=[1, 0, 1, 1], y_pred=[1, 1, 1, 0])
 print(result.accuracy)  # Output: 0.5
@@ -125,16 +125,20 @@ This will run the test suite with coverage reporting.
 
 If you plan to contribute to metriclab, please also install the development tools.
 
-Using `uv`:
+Recommended:
 
 ```shell
-uv pip install -e ".[dev,docs]"
+make install-all
 ```
 
-Using `pip`:
+This installs the project in editable mode together with optional, development,
+and documentation dependencies.
+
+If you prefer to use `uv` directly:
 
 ```shell
-pip install -e ".[dev,docs]"
+uv sync --frozen --all-extras --group dev --group docs
+uv pip install -e .
 ```
 
 Then install the pre-commit hooks:
@@ -143,5 +147,5 @@ Then install the pre-commit hooks:
 pre-commit install
 ```
 
-See [CONTRIBUTING.md](https://github.com/durandtibo/metriclab/blob/main/.github/CONTRIBUTING.md) for
+See [CONTRIBUTING.md](https://github.com/durandtibo/metriclab/blob/main/CONTRIBUTING.md) for
 more information about contributing.

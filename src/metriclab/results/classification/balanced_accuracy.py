@@ -17,8 +17,10 @@ from metriclab.utils.format import make_robust_bar
 class BalancedAccuracyResult(BaseResult):
     r"""Store aggregated values for balanced classification accuracy.
 
-        Balanced accuracy is the macro-average of per-class recall. Unlike
-        standard accuracy, it is robust to class imbalance.
+    Balanced accuracy is the macro-average of per-class recall. Unlike
+    standard accuracy, it is less sensitive to class imbalance. When
+    ``num_predictions`` is ``0``, :meth:`to_display` reports that no
+    predictions were provided instead of rendering a progress bar.
 
     Attributes:
         balanced_accuracy: The balanced accuracy score, in ``[0, 1]``,
@@ -31,17 +33,12 @@ class BalancedAccuracyResult(BaseResult):
             ``nan``.
 
     Example:
-        ```pycon
         >>> from metriclab.results import BalancedAccuracyResult
         >>> m = BalancedAccuracyResult(balanced_accuracy=0.7, num_predictions=10)
-        >>> m
-        BalancedAccuracyResult(balanced_accuracy=0.7, num_predictions=10)
         >>> m.to_dict()
         {'balanced_accuracy': 0.7, 'num_predictions': 10}
         >>> print(m.to_display())
         Balanced Accuracy [██████████████░░░░░░]  0.7000
-
-        ```
     """
 
     balanced_accuracy: float

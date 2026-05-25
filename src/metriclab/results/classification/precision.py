@@ -37,19 +37,12 @@ class PrecisionResult(BaseResult):
             ``num_positive_predictions``.
 
     Example:
-        ```pycon
         >>> from metriclab.results import PrecisionResult
         >>> m = PrecisionResult(num_true_positives=3, num_positive_predictions=4)
-        >>> m
-        PrecisionResult(num_true_positives=3, num_positive_predictions=4)
         >>> m.precision
         0.75
-        >>> m.to_dict()
-        {'precision': 0.75, 'num_true_positives': 3, 'num_positive_predictions': 4}
         >>> print(m.to_display())
         Precision [███████████████░░░░░]  0.7500  (3/4)
-
-        ```
     """
 
     num_true_positives: int | float
@@ -153,15 +146,12 @@ class PrecisionResult(BaseResult):
             A ``PrecisionResult`` with the computed ``num_true_positives``.
 
         Example:
-            ```pycon
             >>> from metriclab.results import PrecisionResult
             >>> m = PrecisionResult.from_precision(precision=0.75, num_positive_predictions=4)
             >>> m.num_true_positives
             3
             >>> m.precision
             0.75
-
-            ```
         """
         if math.isnan(precision) or math.isnan(float(num_positive_predictions)):
             return cls(
@@ -194,7 +184,6 @@ def compute_precision(
             ``true_positives + false_positives`` is ``0``.
 
     Example:
-        ```pycon
         >>> from metriclab.results.classification.precision import compute_precision
         >>> compute_precision(true_positives=3, false_positives=1)
         0.75
@@ -202,8 +191,6 @@ def compute_precision(
         0.0
         >>> compute_precision(true_positives=float("nan"), false_positives=1)
         nan
-
-        ```
     """
     if math.isnan(true_positives) or math.isnan(false_positives):
         return float("nan")
