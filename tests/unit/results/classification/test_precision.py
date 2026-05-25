@@ -212,48 +212,6 @@ def test_precision_result_allclose_nan_true_with_equal_nan() -> None:
     )
 
 
-# --- from_dict ---
-
-
-def test_precision_result_from_dict_standard() -> None:
-    assert PrecisionResult.from_dict(
-        {"num_true_positives": 3, "num_positive_predictions": 4}
-    ).equal(PrecisionResult(num_true_positives=3, num_positive_predictions=4))
-
-
-def test_precision_result_from_dict_zero_predictions() -> None:
-    assert PrecisionResult.from_dict(
-        {"num_true_positives": 0, "num_positive_predictions": 0}
-    ).equal(PrecisionResult(num_true_positives=0, num_positive_predictions=0))
-
-
-def test_precision_result_from_dict_nan() -> None:
-    assert PrecisionResult.from_dict(
-        {"num_true_positives": float("nan"), "num_positive_predictions": 4}
-    ).equal(
-        PrecisionResult(num_true_positives=float("nan"), num_positive_predictions=4),
-        equal_nan=True,
-    )
-
-
-def test_precision_result_from_dict_returns_instance() -> None:
-    assert isinstance(
-        PrecisionResult.from_dict({"num_true_positives": 3, "num_positive_predictions": 4}),
-        PrecisionResult,
-    )
-
-
-def test_precision_result_from_dict_missing_key_raises() -> None:
-    with pytest.raises(KeyError):
-        PrecisionResult.from_dict({"num_true_positives": 3})
-
-
-def test_precision_result_from_dict_roundtrip() -> None:
-    assert PrecisionResult.from_dict(
-        {"num_true_positives": 3, "num_positive_predictions": 4}
-    ).equal(PrecisionResult(num_true_positives=3, num_positive_predictions=4))
-
-
 # --- from_precision ---
 
 

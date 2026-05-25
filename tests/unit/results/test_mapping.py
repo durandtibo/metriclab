@@ -186,27 +186,6 @@ def test_result_dict_allclose_nan_true_with_equal_nan() -> None:
     )
 
 
-# --- from_dict ---
-
-
-def test_result_dict_from_dict() -> None:
-    data = {"train": Result({"loss": 0.5}), "val": Result({"loss": 0.3})}
-    assert ResultDict.from_dict(data).equal(ResultDict(data))
-
-
-def test_result_dict_from_dict_empty() -> None:
-    assert ResultDict.from_dict({}).equal(ResultDict({}))
-
-
-def test_result_dict_from_dict_returns_result_dict_instance() -> None:
-    assert isinstance(ResultDict.from_dict({}), ResultDict)
-
-
-def test_result_dict_from_dict_single_key() -> None:
-    data = {"train": Result({"loss": 0.5})}
-    assert ResultDict.from_dict(data).equal(ResultDict(data))
-
-
 # --- to_dict ---
 
 

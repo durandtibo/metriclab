@@ -6,7 +6,7 @@ __all__ = ["PrecisionResult"]
 
 import math
 from dataclasses import asdict, dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from coola.equality import objects_are_allclose, objects_are_equal
 
@@ -111,13 +111,6 @@ class PrecisionResult(BaseResult):
         if type(other) is not type(self):
             return False
         return objects_are_equal(asdict(self), asdict(other), equal_nan=equal_nan)
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Self:
-        return cls(
-            num_true_positives=data["num_true_positives"],
-            num_positive_predictions=data["num_positive_predictions"],
-        )
 
     def to_dict(self, prefix: str = "", suffix: str = "") -> dict[str, int | float]:
         return {
