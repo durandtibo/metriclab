@@ -1225,3 +1225,19 @@ def test_to_display(tp: int, tn: int, fp: int, fn: int, betas: list[float], expe
         true_positives=tp, true_negatives=tn, false_positives=fp, false_negatives=fn, betas=betas
     )
     assert m.to_display() == expected
+
+
+def test_to_display_nan_counts() -> None:
+    m = BinaryConfusionMatrixResult.from_confusion_matrix(
+        true_positives=float("nan"), true_negatives=4, false_positives=1, false_negatives=2
+    )
+    assert m.to_display() == (
+        "Binary Confusion Matrix\n"
+        "-----------------------\n"
+        "n=nan  TP=nan  TN=4  FP=1  FN=2\n"
+        "Accuracy    [????????????????????]  nan  (nan/nan)\n"
+        "Precision   [????????????????????]  nan  (nan/nan)\n"
+        "Recall      [????????????????????]  nan  (nan/nan)\n"
+        "Specificity [████████████████░░░░]  0.8000  (4/5)\n"
+        "F1          [????????????????????]  nan"
+    )

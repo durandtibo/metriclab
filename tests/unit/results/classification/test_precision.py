@@ -436,6 +436,23 @@ def test_precision_result_to_display_large_numbers() -> None:
     )
 
 
+# --- repr / str ---
+
+
+def test_precision_result_repr() -> None:
+    assert (
+        repr(PrecisionResult(num_true_positives=3, num_positive_predictions=4))
+        == "PrecisionResult(num_true_positives=3, num_positive_predictions=4)"
+    )
+
+
+def test_precision_result_str() -> None:
+    assert (
+        str(PrecisionResult(num_true_positives=3, num_positive_predictions=4))
+        == "PrecisionResult(num_true_positives=3, num_positive_predictions=4)"
+    )
+
+
 ########################################
 #     Tests for compute_precision      #
 ########################################
