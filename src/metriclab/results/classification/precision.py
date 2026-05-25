@@ -21,35 +21,35 @@ if TYPE_CHECKING:
 class PrecisionResult(BaseResult):
     r"""Store aggregated values for classification precision.
 
-        Precision is defined as ``TP / (TP + FP)``, i.e. the fraction of
-        positive predictions that are correct. It measures how many of the
-        predicted positives are actually positive.
+    Precision is defined as ``TP / (TP + FP)``, i.e. the fraction of
+    positive predictions that are correct. It measures how many of the
+    predicted positives are actually positive.
 
     Attributes:
-            num_true_positives: The number of true positives (``TP``).
-            num_positive_predictions: The number of predicted positives
-                (``TP + FP``).
+        num_true_positives: The number of true positives (``TP``).
+        num_positive_predictions: The number of predicted positives
+            (``TP + FP``).
 
     Raises:
-            ValueError: if ``num_true_positives`` is negative.
-            ValueError: if ``num_positive_predictions`` is negative.
-            ValueError: if ``num_true_positives`` exceeds
-                ``num_positive_predictions``.
+        ValueError: if ``num_true_positives`` is negative.
+        ValueError: if ``num_positive_predictions`` is negative.
+        ValueError: if ``num_true_positives`` exceeds
+            ``num_positive_predictions``.
 
     Example:
-    ```pycon
-    >>> from metriclab.results import PrecisionResult
-    >>> m = PrecisionResult(num_true_positives=3, num_positive_predictions=4)
-    >>> m
-    PrecisionResult(num_true_positives=3, num_positive_predictions=4)
-    >>> m.precision
-    0.75
-    >>> m.to_dict()
-    {'precision': 0.75, 'num_true_positives': 3, 'num_positive_predictions': 4}
-    >>> print(m.to_display())
-    Precision [███████████████░░░░░]  0.7500  (3/4)
+        ```pycon
+        >>> from metriclab.results import PrecisionResult
+        >>> m = PrecisionResult(num_true_positives=3, num_positive_predictions=4)
+        >>> m
+        PrecisionResult(num_true_positives=3, num_positive_predictions=4)
+        >>> m.precision
+        0.75
+        >>> m.to_dict()
+        {'precision': 0.75, 'num_true_positives': 3, 'num_positive_predictions': 4}
+        >>> print(m.to_display())
+        Precision [███████████████░░░░░]  0.7500  (3/4)
 
-    ```
+        ```
     """
 
     num_true_positives: int | float
@@ -189,9 +189,9 @@ def compute_precision(
 
     Returns:
         The ratio ``true_positives / (true_positives + false_positives)``.
-        Returns ``nan`` when either ``true_positives`` or
-        ``false_positives`` is ``nan``. Returns ``0.0`` when
-        ``true_positives + false_positives`` is ``0``.
+            Returns ``nan`` when either ``true_positives`` or
+            ``false_positives`` is ``nan``. Returns ``0.0`` when
+            ``true_positives + false_positives`` is ``0``.
 
     Example:
         ```pycon

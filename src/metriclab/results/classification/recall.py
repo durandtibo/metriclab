@@ -21,9 +21,9 @@ if TYPE_CHECKING:
 class RecallResult(BaseResult):
     r"""Store aggregated values for classification recall.
 
-        Recall is defined as ``TP / (TP + FN)``, i.e. the fraction of
-        actual positives that are correctly identified. It measures how
-        many of the true positives are captured by the model.
+    Recall is defined as ``TP / (TP + FN)``, i.e. the fraction of
+    actual positives that are correctly identified. It measures how
+    many of the true positives are captured by the model.
 
     Attributes:
         num_true_positives: The number of true positives (``TP``).
@@ -137,27 +137,27 @@ class RecallResult(BaseResult):
         r"""Create a ``RecallResult`` from a recall score and the number
         of actual positives.
 
-                The number of true positives is back-computed as
-                ``round(recall * num_actual_positives)``.
+        The number of true positives is back-computed as
+        ``round(recall * num_actual_positives)``.
 
         Args:
-                    recall: The recall score, in ``[0, 1]``, or ``nan``.
-                    num_actual_positives: The number of actual positives
-                        (``TP + FN``).
+            recall: The recall score, in ``[0, 1]``, or ``nan``.
+            num_actual_positives: The number of actual positives
+                (``TP + FN``).
 
         Returns:
-                    A ``RecallResult`` with the computed ``num_true_positives``.
+            A ``RecallResult`` with the computed ``num_true_positives``.
 
         Example:
-        ```pycon
-        >>> from metriclab.results import RecallResult
-        >>> m = RecallResult.from_recall(recall=0.6, num_actual_positives=5)
-        >>> m.num_true_positives
-        3
-        >>> m.recall
-        0.6
+            ```pycon
+            >>> from metriclab.results import RecallResult
+            >>> m = RecallResult.from_recall(recall=0.6, num_actual_positives=5)
+            >>> m.num_true_positives
+            3
+            >>> m.recall
+            0.6
 
-        ```
+            ```
         """
         if math.isnan(recall) or math.isnan(float(num_actual_positives)):
             return cls(
@@ -205,9 +205,9 @@ def compute_recall(
 
     Returns:
         The ratio ``true_positives / (true_positives + false_negatives)``.
-        Returns ``nan`` when either ``true_positives`` or
-        ``false_negatives`` is ``nan``. Returns ``0.0`` when
-        ``true_positives + false_negatives`` is ``0``.
+            Returns ``nan`` when either ``true_positives`` or
+            ``false_negatives`` is ``nan``. Returns ``0.0`` when
+            ``true_positives + false_negatives`` is ``0``.
 
     Example:
         ```pycon
