@@ -7,6 +7,7 @@ import pytest
 from coola.equality import objects_are_allclose
 
 from metriclab.results import PrecisionResult
+from metriclab.results.classification.precision import compute_precision
 
 #####################################
 #     Tests for PrecisionResult     #
@@ -433,3 +434,44 @@ def test_precision_result_to_display_large_numbers() -> None:
     assert PrecisionResult(num_true_positives=1125, num_positive_predictions=1500).to_display() == (
         "Precision [███████████████░░░░░]  0.7500  (1,125/1,500)"
     )
+
+
+########################################
+#     Tests for compute_precision      #
+########################################
+
+
+@pytest.mark.parametrize(
+    ("true_positives", "false_positives", "expected"),
+    [
+        pytest.param(3, 1, 0.75, id="standard"),
+        pytest.param(5, 0, 1.0, id="no-false-positives"),
+        pytest.param(0, 5, 0.0, id="no-true-positives"),
+        pytest.param(1, 1, 0.5, id="equal-tp-fp"),
+    ],
+)
+def test_compute_precision(
+    true_positives: float,
+    false_positives: float,
+    expected: float,
+) -> None:
+    assert compute_precision(true_positives, false_positives) == expected
+
+
+def test_compute_precision_zero_denominator() -> None:
+    assert compute_precision(true_positives=0, false_positives=0) == 0.0
+
+
+@pytest.mark.parametrize(
+    ("true_positives", "false_positives"),
+    [
+        pytest.param(float("nan"), 1, id="nan-tp"),
+        pytest.param(3, float("nan"), id="nan-fp"),
+        pytest.param(float("nan"), float("nan"), id="nan-all"),
+    ],
+)
+def test_compute_precision_nan(
+    true_positives: float,
+    false_positives: float,
+) -> None:
+    assert math.isnan(compute_precision(true_positives, false_positives))
