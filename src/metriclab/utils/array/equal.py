@@ -1,4 +1,4 @@
-r"""Contain equality utilities."""
+r"""Element-wise equality utilities for NumPy arrays."""
 
 from __future__ import annotations
 

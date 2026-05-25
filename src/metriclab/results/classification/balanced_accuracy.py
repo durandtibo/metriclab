@@ -17,8 +17,8 @@ from metriclab.utils.format import make_robust_bar
 class BalancedAccuracyResult(BaseResult):
     r"""Store aggregated values for balanced classification accuracy.
 
-        Balanced accuracy is the macro-average of per-class recall. Unlike
-        standard accuracy, it is robust to class imbalance.
+    Balanced accuracy is the macro-average of per-class recall. Unlike
+    standard accuracy, it is robust to class imbalance.
 
     Attributes:
         balanced_accuracy: The balanced accuracy score, in ``[0, 1]``,
