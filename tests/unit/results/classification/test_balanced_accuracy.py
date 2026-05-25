@@ -153,49 +153,6 @@ def test_balanced_accuracy_result_allclose_nan_true_with_equal_nan() -> None:
     )
 
 
-# --- from_dict ---
-
-
-def test_balanced_accuracy_result_from_dict_standard() -> None:
-    assert BalancedAccuracyResult.from_dict(
-        {"balanced_accuracy": 0.7, "num_predictions": 10}
-    ).equal(BalancedAccuracyResult(balanced_accuracy=0.7, num_predictions=10))
-
-
-def test_balanced_accuracy_result_from_dict_zero_predictions() -> None:
-    assert BalancedAccuracyResult.from_dict({"balanced_accuracy": 0.0, "num_predictions": 0}).equal(
-        BalancedAccuracyResult(balanced_accuracy=0.0, num_predictions=0)
-    )
-
-
-def test_balanced_accuracy_result_from_dict_nan() -> None:
-    assert BalancedAccuracyResult.from_dict(
-        {"balanced_accuracy": float("nan"), "num_predictions": 10}
-    ).equal(
-        BalancedAccuracyResult(balanced_accuracy=float("nan"), num_predictions=10),
-        equal_nan=True,
-    )
-
-
-def test_balanced_accuracy_result_from_dict_returns_instance() -> None:
-    assert isinstance(
-        BalancedAccuracyResult.from_dict({"balanced_accuracy": 0.7, "num_predictions": 10}),
-        BalancedAccuracyResult,
-    )
-
-
-def test_balanced_accuracy_result_from_dict_missing_key_raises() -> None:
-    with pytest.raises(KeyError):
-        BalancedAccuracyResult.from_dict({"balanced_accuracy": 0.7})
-
-
-def test_balanced_accuracy_result_from_dict_roundtrip() -> None:
-    m = BalancedAccuracyResult(balanced_accuracy=0.7, num_predictions=10)
-    assert BalancedAccuracyResult.from_dict(
-        {"balanced_accuracy": 0.7, "num_predictions": 10}
-    ).equal(m)
-
-
 # --- to_dict ---
 
 

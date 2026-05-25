@@ -6,15 +6,11 @@ __all__ = ["AccuracyResult", "compute_accuracy"]
 
 import math
 from dataclasses import asdict, dataclass
-from typing import TYPE_CHECKING, Any
 
 from coola.equality import objects_are_allclose, objects_are_equal
 from coola.utils.format import make_bar
 
 from metriclab.results.base import BaseResult
-
-if TYPE_CHECKING:
-    from typing import Self
 
 
 @dataclass(frozen=True)
@@ -106,13 +102,6 @@ class AccuracyResult(BaseResult):
         if type(other) is not type(self):
             return False
         return objects_are_equal(asdict(self), asdict(other), equal_nan=equal_nan)
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Self:
-        return cls(
-            num_correct_predictions=data["num_correct_predictions"],
-            num_predictions=data["num_predictions"],
-        )
 
     def to_dict(self, prefix: str = "", suffix: str = "") -> dict[str, int | float]:
         return {

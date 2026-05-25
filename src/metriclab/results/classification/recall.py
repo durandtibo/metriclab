@@ -6,7 +6,7 @@ __all__ = ["RecallResult"]
 
 import math
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from coola.equality import objects_are_allclose, objects_are_equal
 
@@ -26,15 +26,15 @@ class RecallResult(BaseResult):
         many of the true positives are captured by the model.
 
     Attributes:
-            num_true_positives: The number of true positives (``TP``).
-            num_actual_positives: The number of actual positives
-                (``TP + FN``).
+        num_true_positives: The number of true positives (``TP``).
+        num_actual_positives: The number of actual positives
+            (``TP + FN``).
 
     Raises:
-            ValueError: if ``num_true_positives`` is negative.
-            ValueError: if ``num_actual_positives`` is negative.
-            ValueError: if ``num_true_positives`` exceeds
-                ``num_actual_positives``.
+        ValueError: if ``num_true_positives`` is negative.
+        ValueError: if ``num_actual_positives`` is negative.
+        ValueError: if ``num_true_positives`` exceeds
+            ``num_actual_positives``.
 
     Example:
     ```pycon
@@ -126,13 +126,6 @@ class RecallResult(BaseResult):
                 "num_actual_positives": other.num_actual_positives,
             },
             equal_nan=equal_nan,
-        )
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Self:
-        return cls(
-            num_true_positives=data["num_true_positives"],
-            num_actual_positives=data["num_actual_positives"],
         )
 
     @classmethod

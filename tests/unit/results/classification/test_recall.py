@@ -204,48 +204,6 @@ def test_recall_result_allclose_nan_true_with_equal_nan() -> None:
     )
 
 
-# --- from_dict ---
-
-
-def test_recall_result_from_dict_standard() -> None:
-    assert RecallResult.from_dict({"num_true_positives": 3, "num_actual_positives": 5}).equal(
-        RecallResult(num_true_positives=3, num_actual_positives=5)
-    )
-
-
-def test_recall_result_from_dict_zero_predictions() -> None:
-    assert RecallResult.from_dict({"num_true_positives": 0, "num_actual_positives": 0}).equal(
-        RecallResult(num_true_positives=0, num_actual_positives=0)
-    )
-
-
-def test_recall_result_from_dict_nan() -> None:
-    assert RecallResult.from_dict(
-        {"num_true_positives": float("nan"), "num_actual_positives": 5}
-    ).equal(
-        RecallResult(num_true_positives=float("nan"), num_actual_positives=5),
-        equal_nan=True,
-    )
-
-
-def test_recall_result_from_dict_returns_instance() -> None:
-    assert isinstance(
-        RecallResult.from_dict({"num_true_positives": 3, "num_actual_positives": 5}),
-        RecallResult,
-    )
-
-
-def test_recall_result_from_dict_missing_key_raises() -> None:
-    with pytest.raises(KeyError):
-        RecallResult.from_dict({"num_true_positives": 3})
-
-
-def test_recall_result_from_dict_roundtrip() -> None:
-    assert RecallResult.from_dict({"num_true_positives": 3, "num_actual_positives": 5}).equal(
-        RecallResult(num_true_positives=3, num_actual_positives=5)
-    )
-
-
 # --- from_recall ---
 
 
