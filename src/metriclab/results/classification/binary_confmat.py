@@ -6,7 +6,6 @@ __all__ = [
     "BinaryConfusionMatrixResult",
     "check_betas",
     "compute_f_beta_score",
-    "compute_recall",
     "compute_specificity",
     "f_beta_label",
 ]
@@ -20,6 +19,7 @@ from coola.equality import objects_are_allclose, objects_are_equal
 from metriclab.results.base import BaseResult
 from metriclab.results.classification.accuracy import compute_accuracy
 from metriclab.results.classification.precision import compute_precision
+from metriclab.results.classification.recall import compute_recall
 from metriclab.utils.format import make_robust_bar
 
 if TYPE_CHECKING:
@@ -43,43 +43,6 @@ def check_betas(betas: Sequence[float]) -> None:
         if beta < 0:
             msg = f"beta values must be >= 0, got {beta}"
             raise ValueError(msg)
-
-
-def compute_recall(
-    true_positives: float,
-    false_negatives: float,
-) -> float:
-    r"""Compute the recall (sensitivity) score.
-
-    Recall measures the proportion of actual positives that are
-    correctly identified.
-
-    Args:
-        true_positives: The number of true positives, or ``nan``.
-        false_negatives: The number of false negatives, or ``nan``.
-
-    Returns:
-        The ratio ``true_positives / (true_positives + false_negatives)``.
-        Returns ``nan`` when either ``true_positives`` or
-        ``false_negatives`` is ``nan``. Returns ``0.0`` when
-        ``true_positives + false_negatives`` is ``0``.
-
-    Example:
-        ```pycon
-        >>> from metriclab.results.classification.binary_confmat import compute_recall
-        >>> compute_recall(true_positives=3, false_negatives=2)
-        0.6
-        >>> compute_recall(true_positives=0, false_negatives=0)
-        0.0
-        >>> compute_recall(true_positives=float("nan"), false_negatives=2)
-        nan
-
-        ```
-    """
-    if math.isnan(true_positives) or math.isnan(false_negatives):
-        return float("nan")
-    denominator = true_positives + false_negatives
-    return true_positives / denominator if denominator > 0 else 0.0
 
 
 def compute_specificity(

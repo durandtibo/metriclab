@@ -2,7 +2,7 @@ r"""Recall result implementation."""
 
 from __future__ import annotations
 
-__all__ = ["RecallResult"]
+__all__ = ["RecallResult", "compute_recall"]
 
 import math
 from dataclasses import dataclass
@@ -188,3 +188,40 @@ class RecallResult(BaseResult):
             else f"{int(self.num_true_positives):,}"
         )
         return f"Recall {bar}  {score_str}  ({tp_str}/{int(self.num_actual_positives):,})"
+
+
+def compute_recall(
+    true_positives: float,
+    false_negatives: float,
+) -> float:
+    r"""Compute the recall (sensitivity) score.
+
+    Recall measures the proportion of actual positives that are
+    correctly identified.
+
+    Args:
+        true_positives: The number of true positives, or ``nan``.
+        false_negatives: The number of false negatives, or ``nan``.
+
+    Returns:
+        The ratio ``true_positives / (true_positives + false_negatives)``.
+        Returns ``nan`` when either ``true_positives`` or
+        ``false_negatives`` is ``nan``. Returns ``0.0`` when
+        ``true_positives + false_negatives`` is ``0``.
+
+    Example:
+        ```pycon
+        >>> from metriclab.results.classification.recall import compute_recall
+        >>> compute_recall(true_positives=3, false_negatives=2)
+        0.6
+        >>> compute_recall(true_positives=0, false_negatives=0)
+        0.0
+        >>> compute_recall(true_positives=float("nan"), false_negatives=2)
+        nan
+
+        ```
+    """
+    if math.isnan(true_positives) or math.isnan(false_negatives):
+        return float("nan")
+    denominator = true_positives + false_negatives
+    return true_positives / denominator if denominator > 0 else 0.0
