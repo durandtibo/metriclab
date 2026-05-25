@@ -320,6 +320,36 @@ class BinaryConfusionMatrixResult(BaseResult):
         return f"{header}\n{separator}\n{summary}\n{metric_text}"
 
     def combine(self, other: BinaryConfusionMatrixResult) -> BinaryConfusionMatrixResult:
+        r"""Merge two partial binary confusion matrix results.
+
+        Args:
+            other: Another binary confusion matrix result to combine
+                with ``self``.
+
+        Returns:
+            A new result whose confusion matrix counts are the
+                element-wise sum of both results.
+
+        Raises:
+            TypeError: If ``other`` is not a
+                :class:`BinaryConfusionMatrixResult`.
+
+        Example:
+            ```pycon
+            >>> from metriclab.results import BinaryConfusionMatrixResult
+            >>> r1 = BinaryConfusionMatrixResult.from_confusion_matrix(
+            ...     true_positives=3, true_negatives=4,
+            ...     false_positives=1, false_negatives=2,
+            ... )
+            >>> r2 = BinaryConfusionMatrixResult.from_confusion_matrix(
+            ...     true_positives=2, true_negatives=3,
+            ...     false_positives=0, false_negatives=1,
+            ... )
+            >>> r1.combine(r2).num_predictions
+            16
+
+            ```
+        """
         if not isinstance(other, BinaryConfusionMatrixResult):
             msg = f"Cannot combine {self.__class__.__qualname__} with {type(other)}"
             raise TypeError(msg)

@@ -37,19 +37,19 @@ class RecallResult(BaseResult):
             ``num_actual_positives``.
 
     Example:
-    ```pycon
-    >>> from metriclab.results import RecallResult
-    >>> m = RecallResult(num_true_positives=3, num_actual_positives=5)
-    >>> m
-    RecallResult(num_true_positives=3, num_actual_positives=5)
-    >>> m.recall
-    0.6
-    >>> m.to_dict()
-    {'recall': 0.6, 'num_true_positives': 3, 'num_actual_positives': 5}
-    >>> print(m.to_display())
-    Recall [████████████░░░░░░░░]  0.6000  (3/5)
+        ```pycon
+        >>> from metriclab.results import RecallResult
+        >>> m = RecallResult(num_true_positives=3, num_actual_positives=5)
+        >>> m
+        RecallResult(num_true_positives=3, num_actual_positives=5)
+        >>> m.recall
+        0.6
+        >>> m.to_dict()
+        {'recall': 0.6, 'num_true_positives': 3, 'num_actual_positives': 5}
+        >>> print(m.to_display())
+        Recall [████████████░░░░░░░░]  0.6000  (3/5)
 
-    ```
+        ```
     """
 
     num_true_positives: int | float

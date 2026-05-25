@@ -62,44 +62,44 @@ def accuracy(
             ``missing_values`` and ``missing_policy`` is ``'raise'``.
 
     Example:
-    ```pycon
-    >>> import numpy as np
-    >>> from metriclab.functional import accuracy
-    >>> # with numpy arrays
-    >>> accuracy(
-    ...     y_true=np.array([1, 0, 0, 1, 1]),
-    ...     y_pred=np.array([1, 0, 0, 1, 1]),
-    ... )
-    AccuracyResult(num_correct_predictions=5, num_predictions=5)
-    >>> # with lists
-    >>> accuracy(y_true=[1, 0, 0, 1, 1], y_pred=[1, 0, 1, 1, 1])
-    AccuracyResult(num_correct_predictions=4, num_predictions=5)
-    >>> # with string labels
-    >>> accuracy(
-    ...     y_true=["cat", "dog", "cat", "dog"],
-    ...     y_pred=["cat", "dog", "dog", "dog"],
-    ... )
-    AccuracyResult(num_correct_predictions=3, num_predictions=4)
-    >>> # with missing values and missing_policy='propagate' (default)
-    >>> accuracy(
-    ...     y_true=np.array([1.0, 0.0, 0.0, 1.0, float("nan")]),
-    ...     y_pred=np.array([1.0, 0.0, 0.0, 1.0, 1.0]),
-    ...     missing_values=float("nan"),
-    ... )
-    AccuracyResult(num_correct_predictions=nan, num_predictions=5)
-    >>> # with missing values and missing_policy='omit'
-    >>> accuracy(
-    ...     y_true=np.array([1.0, 0.0, 0.0, 1.0, float("nan")]),
-    ...     y_pred=np.array([1.0, 0.0, 0.0, 1.0, 1.0]),
-    ...     missing_policy="omit",
-    ...     missing_values=float("nan"),
-    ... )
-    AccuracyResult(num_correct_predictions=4, num_predictions=4)
-    >>> # allow empty result instead of raising
-    >>> accuracy(y_true=[], y_pred=[], raise_empty=False)
-    AccuracyResult(num_correct_predictions=nan, num_predictions=0)
+        ```pycon
+        >>> import numpy as np
+        >>> from metriclab.functional import accuracy
+        >>> # with numpy arrays
+        >>> accuracy(
+        ...     y_true=np.array([1, 0, 0, 1, 1]),
+        ...     y_pred=np.array([1, 0, 0, 1, 1]),
+        ... )
+        AccuracyResult(num_correct_predictions=5, num_predictions=5)
+        >>> # with lists
+        >>> accuracy(y_true=[1, 0, 0, 1, 1], y_pred=[1, 0, 1, 1, 1])
+        AccuracyResult(num_correct_predictions=4, num_predictions=5)
+        >>> # with string labels
+        >>> accuracy(
+        ...     y_true=["cat", "dog", "cat", "dog"],
+        ...     y_pred=["cat", "dog", "dog", "dog"],
+        ... )
+        AccuracyResult(num_correct_predictions=3, num_predictions=4)
+        >>> # with missing values and missing_policy='propagate' (default)
+        >>> accuracy(
+        ...     y_true=np.array([1.0, 0.0, 0.0, 1.0, float("nan")]),
+        ...     y_pred=np.array([1.0, 0.0, 0.0, 1.0, 1.0]),
+        ...     missing_values=float("nan"),
+        ... )
+        AccuracyResult(num_correct_predictions=nan, num_predictions=5)
+        >>> # with missing values and missing_policy='omit'
+        >>> accuracy(
+        ...     y_true=np.array([1.0, 0.0, 0.0, 1.0, float("nan")]),
+        ...     y_pred=np.array([1.0, 0.0, 0.0, 1.0, 1.0]),
+        ...     missing_policy="omit",
+        ...     missing_values=float("nan"),
+        ... )
+        AccuracyResult(num_correct_predictions=4, num_predictions=4)
+        >>> # allow empty result instead of raising
+        >>> accuracy(y_true=[], y_pred=[], raise_empty=False)
+        AccuracyResult(num_correct_predictions=nan, num_predictions=0)
 
-    ```
+        ```
     """
     y_true, y_pred = preprocess_1d(
         arrays=[to_numpy_1d(y_true), to_numpy_1d(y_pred)],
