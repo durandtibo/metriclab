@@ -28,6 +28,12 @@ class AccuracyResult(BaseResult):
             because of missing values.
         num_predictions: The number of predictions.
 
+    Raises:
+        ValueError: If ``num_predictions`` is negative, if
+            ``num_correct_predictions`` is negative, or if
+            ``num_correct_predictions`` is greater than
+            ``num_predictions``.
+
     Example:
         ```pycon
         >>> from metriclab.results import AccuracyResult
@@ -46,14 +52,6 @@ class AccuracyResult(BaseResult):
     num_predictions: int
 
     def __post_init__(self) -> None:
-        r"""Validate metric counts after dataclass initialization.
-
-        Raises:
-            ValueError: If ``num_predictions`` is negative, if
-                ``num_correct_predictions`` is negative, or if
-                ``num_correct_predictions`` is greater than
-                ``num_predictions``.
-        """
         if self.num_predictions < 0:
             msg = f"num_predictions must be >= 0, got {self.num_predictions}"
             raise ValueError(msg)
