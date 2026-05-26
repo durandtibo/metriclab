@@ -55,8 +55,8 @@ def binary_precision(
 
     Returns:
         A ``BinaryPrecisionResult``. When missing values are present
-        and ``missing_policy='propagate'``, the result keeps
-        ``num_predictions`` and sets ``precision`` to ``nan``.
+            and ``missing_policy='propagate'``, the result keeps
+            ``num_predictions`` and sets ``precision`` to ``nan``.
 
     Raises:
         EmptyMetricError: if there are no valid predictions and

@@ -111,6 +111,7 @@ class MulticlassPrecisionResult(BaseResult):
             rtol=rtol,
             atol=atol,
             equal_nan=equal_nan,
+            show_difference=True,
         )
 
     def equal(self, other: object, equal_nan: bool = False) -> bool:
@@ -118,7 +119,9 @@ class MulticlassPrecisionResult(BaseResult):
             return False
         return objects_are_equal(asdict(self), asdict(other), equal_nan=equal_nan)
 
-    def to_dict(self, prefix: str = "", suffix: str = "") -> dict[str, int | float | list[float]]:
+    def to_dict(
+        self, prefix: str = "", suffix: str = ""
+    ) -> dict[str, int | float | list[int | float]]:
         return {
             f"{prefix}macro_precision{suffix}": self.macro_precision,
             f"{prefix}micro_precision{suffix}": self.micro_precision,
@@ -138,7 +141,7 @@ class MulticlassPrecisionResult(BaseResult):
             + _precision_row("Weighted", self.weighted_precision)
             + "\nPer class:\n"
             + "".join(
-                _precision_row(f"  class {i}", p, support=int(s))
+                _precision_row(label=f"  class {i}", score=float(p), support=int(s))
                 for i, (p, s) in enumerate(zip(self.per_class_precision, self.support, strict=True))
             ).rstrip("\n")
         )
