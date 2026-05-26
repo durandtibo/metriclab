@@ -118,7 +118,7 @@ class MulticlassPrecisionResult(BaseResult):
             return False
         return objects_are_equal(asdict(self), asdict(other), equal_nan=equal_nan)
 
-    def to_dict(self, prefix: str = "", suffix: str = "") -> dict[str, int | float | list]:
+    def to_dict(self, prefix: str = "", suffix: str = "") -> dict[str, int | float | list[float]]:
         return {
             f"{prefix}macro_precision{suffix}": self.macro_precision,
             f"{prefix}micro_precision{suffix}": self.micro_precision,
