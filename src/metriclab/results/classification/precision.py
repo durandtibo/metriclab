@@ -26,68 +26,70 @@ class PrecisionResult(BaseResult):
     predicted positives are actually positive.
 
     Attributes:
-        num_true_positives: The number of true positives (``TP``).
-        num_positive_predictions: The number of predicted positives
-            (``TP + FP``).
+        true_positives: The number of true positives (``TP``).
+        false_positives: The number of false positives (``FP``).
 
     Raises:
-        ValueError: if ``num_true_positives`` is negative.
-        ValueError: if ``num_positive_predictions`` is negative.
-        ValueError: if ``num_true_positives`` exceeds
-            ``num_positive_predictions``.
+        ValueError: if ``true_positives`` is negative and not ``nan``.
+        ValueError: if ``false_positives`` is negative and not ``nan``.
 
     Example:
         ```pycon
         >>> from metriclab.results import PrecisionResult
-        >>> m = PrecisionResult(num_true_positives=3, num_positive_predictions=4)
+        >>> m = PrecisionResult(true_positives=3, false_positives=1)
         >>> m
-        PrecisionResult(num_true_positives=3, num_positive_predictions=4)
+        PrecisionResult(true_positives=3, false_positives=1)
         >>> m.precision
         0.75
+        >>> m.num_positive_predictions
+        4
         >>> m.to_dict()
-        {'precision': 0.75, 'num_true_positives': 3, 'num_positive_predictions': 4}
+        {'precision': 0.75, 'true_positives': 3, 'false_positives': 1, 'num_positive_predictions': 4}
         >>> print(m.to_display())
         Precision [███████████████░░░░░]  0.7500  (3/4)
 
         ```
     """
 
-    num_true_positives: int | float
-    num_positive_predictions: int | float
+    true_positives: int | float
+    false_positives: int | float
 
     def __post_init__(self) -> None:
         for name, value in (
-            ("num_true_positives", self.num_true_positives),
-            ("num_positive_predictions", self.num_positive_predictions),
+            ("true_positives", self.true_positives),
+            ("false_positives", self.false_positives),
         ):
             if not math.isnan(float(value)) and value < 0:
                 msg = f"{name} must be >= 0, got {value}"
                 raise ValueError(msg)
-        if (
-            not math.isnan(float(self.num_true_positives))
-            and not math.isnan(float(self.num_positive_predictions))
-            and self.num_true_positives > self.num_positive_predictions
-        ):
-            msg = (
-                f"num_true_positives ({self.num_true_positives}) cannot exceed "
-                f"num_positive_predictions ({self.num_positive_predictions})"
-            )
-            raise ValueError(msg)
+
+    @property
+    def num_positive_predictions(self) -> int | float:
+        r"""Return the number of positive predictions (``TP + FP``).
+
+        Returns:
+            The sum ``true_positives + false_positives``, or ``nan``
+                if either count is ``nan``.
+        """
+        tp = float(self.true_positives)
+        fp = float(self.false_positives)
+        if math.isnan(tp) or math.isnan(fp):
+            return float("nan")
+        return self.true_positives + self.false_positives
 
     @property
     def precision(self) -> float:
         r"""Return the precision score.
 
         Returns:
-            ``num_true_positives / num_positive_predictions``.
-            Returns ``nan`` when ``num_positive_predictions`` is ``0``
-            or either count is ``nan``.
+            ``true_positives / (true_positives + false_positives)``.
+                Returns ``nan`` when either count is ``nan``. Returns
+                ``0.0`` when ``true_positives + false_positives`` is ``0``.
         """
-        tp = float(self.num_true_positives)
-        pp = float(self.num_positive_predictions)
-        if math.isnan(tp) or math.isnan(pp) or pp == 0:
-            return float("nan")
-        return tp / pp
+        return compute_precision(
+            true_positives=float(self.true_positives),
+            false_positives=float(self.false_positives),
+        )
 
     def allclose(
         self,
@@ -115,7 +117,8 @@ class PrecisionResult(BaseResult):
     def to_dict(self, prefix: str = "", suffix: str = "") -> dict[str, int | float]:
         return {
             f"{prefix}precision{suffix}": self.precision,
-            f"{prefix}num_true_positives{suffix}": self.num_true_positives,
+            f"{prefix}true_positives{suffix}": self.true_positives,
+            f"{prefix}false_positives{suffix}": self.false_positives,
             f"{prefix}num_positive_predictions{suffix}": self.num_positive_predictions,
         }
 
@@ -125,12 +128,10 @@ class PrecisionResult(BaseResult):
         score = self.precision
         bar = make_robust_bar(score, length=20)
         score_str = "nan" if math.isnan(score) else f"{score:.4f}"
-        tp_str = (
-            "?"
-            if math.isnan(float(self.num_true_positives))
-            else f"{int(self.num_true_positives):,}"
-        )
-        return f"Precision {bar}  {score_str}  ({tp_str}/{int(self.num_positive_predictions):,})"
+        tp_str = "?" if math.isnan(float(self.true_positives)) else f"{int(self.true_positives):,}"
+        pp = self.num_positive_predictions
+        pp_str = "?" if math.isnan(float(pp)) else f"{int(pp):,}"
+        return f"Precision {bar}  {score_str}  ({tp_str}/{pp_str})"
 
     @classmethod
     def from_precision(
@@ -142,7 +143,8 @@ class PrecisionResult(BaseResult):
         number of positive predictions.
 
         The number of true positives is back-computed as
-        ``round(precision * num_positive_predictions)``.
+        ``round(precision * num_positive_predictions)`` and false
+        positives as the remainder.
 
         Args:
             precision: The precision score, in ``[0, 1]``, or ``nan``.
@@ -150,14 +152,17 @@ class PrecisionResult(BaseResult):
                 (``TP + FP``).
 
         Returns:
-            A ``PrecisionResult`` with the computed ``num_true_positives``.
+            A ``PrecisionResult`` with computed ``true_positives`` and
+                ``false_positives``.
 
         Example:
             ```pycon
             >>> from metriclab.results import PrecisionResult
             >>> m = PrecisionResult.from_precision(precision=0.75, num_positive_predictions=4)
-            >>> m.num_true_positives
+            >>> m.true_positives
             3
+            >>> m.false_positives
+            1
             >>> m.precision
             0.75
 
@@ -165,13 +170,12 @@ class PrecisionResult(BaseResult):
         """
         if math.isnan(precision) or math.isnan(float(num_positive_predictions)):
             return cls(
-                num_true_positives=float("nan"),
-                num_positive_predictions=num_positive_predictions,
+                true_positives=float("nan"),
+                false_positives=float("nan"),
             )
-        return cls(
-            num_true_positives=round(precision * num_positive_predictions),
-            num_positive_predictions=num_positive_predictions,
-        )
+        tp = round(precision * num_positive_predictions)
+        fp = round(num_positive_predictions) - tp
+        return cls(true_positives=tp, false_positives=fp)
 
 
 def compute_precision(
