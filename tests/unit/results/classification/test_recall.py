@@ -18,141 +18,177 @@ from metriclab.results.classification.recall import compute_recall
 
 
 def test_recall_result_instantiation() -> None:
-    m = RecallResult(num_true_positives=3, num_actual_positives=5)
-    assert m.num_true_positives == 3
-    assert m.num_actual_positives == 5
+    m = RecallResult(true_positives=3, false_negatives=2)
+    assert m.true_positives == 3
+    assert m.false_negatives == 2
 
 
 def test_recall_result_zero_predictions() -> None:
-    m = RecallResult(num_true_positives=0, num_actual_positives=0)
-    assert m.num_true_positives == 0
-    assert m.num_actual_positives == 0
+    m = RecallResult(true_positives=0, false_negatives=0)
+    assert m.true_positives == 0
+    assert m.false_negatives == 0
 
 
 def test_recall_result_nan_true_positives() -> None:
-    m = RecallResult(num_true_positives=float("nan"), num_actual_positives=5)
-    assert math.isnan(m.num_true_positives)
+    m = RecallResult(true_positives=float("nan"), false_negatives=2)
+    assert math.isnan(m.true_positives)
+
+
+def test_recall_result_nan_false_negatives() -> None:
+    m = RecallResult(true_positives=3, false_negatives=float("nan"))
+    assert math.isnan(m.false_negatives)
 
 
 def test_recall_result_frozen() -> None:
-    m = RecallResult(num_true_positives=3, num_actual_positives=5)
+    m = RecallResult(true_positives=3, false_negatives=2)
     with pytest.raises(FrozenInstanceError):
-        m.num_true_positives = 2  # type: ignore[misc]
+        m.true_positives = 2  # type: ignore[misc]
 
 
 def test_recall_result_perfect() -> None:
-    m = RecallResult(num_true_positives=5, num_actual_positives=5)
+    m = RecallResult(true_positives=5, false_negatives=0)
     assert m.recall == 1.0
 
 
 def test_recall_result_zero_true_positives() -> None:
-    m = RecallResult(num_true_positives=0, num_actual_positives=5)
+    m = RecallResult(true_positives=0, false_negatives=5)
     assert m.recall == 0.0
 
 
 # --- validation ---
 
 
-def test_recall_result_negative_num_true_positives_raises() -> None:
-    with pytest.raises(ValueError, match="num_true_positives must be >= 0"):
-        RecallResult(num_true_positives=-1, num_actual_positives=5)
+def test_recall_result_negative_true_positives_raises() -> None:
+    with pytest.raises(ValueError, match="true_positives must be >= 0"):
+        RecallResult(true_positives=-1, false_negatives=2)
 
 
-def test_recall_result_negative_num_actual_positives_raises() -> None:
-    with pytest.raises(ValueError, match="num_actual_positives must be >= 0"):
-        RecallResult(num_true_positives=3, num_actual_positives=-1)
-
-
-def test_recall_result_num_true_positives_exceeds_num_actual_positives_raises() -> None:
-    with pytest.raises(ValueError, match="cannot exceed num_actual_positives"):
-        RecallResult(num_true_positives=6, num_actual_positives=5)
+def test_recall_result_negative_false_negatives_raises() -> None:
+    with pytest.raises(ValueError, match="false_negatives must be >= 0"):
+        RecallResult(true_positives=3, false_negatives=-1)
 
 
 def test_recall_result_nan_true_positives_does_not_raise() -> None:
-    RecallResult(num_true_positives=float("nan"), num_actual_positives=5)
+    RecallResult(true_positives=float("nan"), false_negatives=2)
+
+
+def test_recall_result_nan_false_negatives_does_not_raise() -> None:
+    RecallResult(true_positives=3, false_negatives=float("nan"))
 
 
 def test_recall_result_zero_true_positives_does_not_raise() -> None:
-    RecallResult(num_true_positives=0, num_actual_positives=5)
+    RecallResult(true_positives=0, false_negatives=5)
 
 
-def test_recall_result_num_true_positives_equals_num_actual_positives_does_not_raise() -> None:
-    RecallResult(num_true_positives=5, num_actual_positives=5)
+def test_recall_result_zero_false_negatives_does_not_raise() -> None:
+    RecallResult(true_positives=5, false_negatives=0)
 
 
 def test_recall_result_all_zero_does_not_raise() -> None:
-    RecallResult(num_true_positives=0, num_actual_positives=0)
+    RecallResult(true_positives=0, false_negatives=0)
+
+
+# --- num_actual_positives property ---
+
+
+@pytest.mark.parametrize(
+    ("true_positives", "false_negatives", "expected"),
+    [
+        pytest.param(3, 2, 5, id="standard"),
+        pytest.param(5, 0, 5, id="no-false-negatives"),
+        pytest.param(0, 5, 5, id="no-true-positives"),
+        pytest.param(0, 0, 0, id="all-zero"),
+    ],
+)
+def test_recall_result_num_actual_positives(
+    true_positives: int, false_negatives: int, expected: int
+) -> None:
+    assert (
+        RecallResult(
+            true_positives=true_positives, false_negatives=false_negatives
+        ).num_actual_positives
+        == expected
+    )
+
+
+def test_recall_result_num_actual_positives_nan_true_positives() -> None:
+    assert math.isnan(
+        RecallResult(true_positives=float("nan"), false_negatives=2).num_actual_positives
+    )
+
+
+def test_recall_result_num_actual_positives_nan_false_negatives() -> None:
+    assert math.isnan(
+        RecallResult(true_positives=3, false_negatives=float("nan")).num_actual_positives
+    )
 
 
 # --- recall property ---
 
 
 @pytest.mark.parametrize(
-    ("num_true_positives", "num_actual_positives", "expected"),
+    ("true_positives", "false_negatives", "expected"),
     [
-        pytest.param(3, 5, 0.6, id="standard"),
-        pytest.param(5, 5, 1.0, id="perfect"),
+        pytest.param(3, 2, 0.6, id="standard"),
+        pytest.param(5, 0, 1.0, id="perfect"),
         pytest.param(0, 5, 0.0, id="zero"),
-        pytest.param(1, 2, 0.5, id="half"),
-        pytest.param(1, 4, 0.25, id="quarter"),
+        pytest.param(1, 1, 0.5, id="half"),
+        pytest.param(1, 3, 0.25, id="quarter"),
     ],
 )
-def test_recall_result_recall(
-    num_true_positives: int,
-    num_actual_positives: int,
-    expected: float,
-) -> None:
+def test_recall_result_recall(true_positives: int, false_negatives: int, expected: float) -> None:
     assert (
-        RecallResult(
-            num_true_positives=num_true_positives,
-            num_actual_positives=num_actual_positives,
-        ).recall
+        RecallResult(true_positives=true_positives, false_negatives=false_negatives).recall
         == expected
     )
 
 
-def test_recall_result_recall_zero_denominator_returns_nan() -> None:
-    assert math.isnan(RecallResult(num_true_positives=0, num_actual_positives=0).recall)
+def test_recall_result_recall_zero_denominator_returns_zero() -> None:
+    assert RecallResult(true_positives=0, false_negatives=0).recall == 0.0
 
 
 def test_recall_result_recall_nan_true_positives_returns_nan() -> None:
-    assert math.isnan(RecallResult(num_true_positives=float("nan"), num_actual_positives=5).recall)
+    assert math.isnan(RecallResult(true_positives=float("nan"), false_negatives=2).recall)
+
+
+def test_recall_result_recall_nan_false_negatives_returns_nan() -> None:
+    assert math.isnan(RecallResult(true_positives=3, false_negatives=float("nan")).recall)
 
 
 # --- equal ---
 
 
 def test_recall_result_equal_true() -> None:
-    assert RecallResult(num_true_positives=3, num_actual_positives=5).equal(
-        RecallResult(num_true_positives=3, num_actual_positives=5)
+    assert RecallResult(true_positives=3, false_negatives=2).equal(
+        RecallResult(true_positives=3, false_negatives=2)
     )
 
 
-def test_recall_result_equal_false_different_num_true_positives() -> None:
-    assert not RecallResult(num_true_positives=3, num_actual_positives=5).equal(
-        RecallResult(num_true_positives=2, num_actual_positives=5)
+def test_recall_result_equal_false_different_true_positives() -> None:
+    assert not RecallResult(true_positives=3, false_negatives=2).equal(
+        RecallResult(true_positives=2, false_negatives=2)
     )
 
 
-def test_recall_result_equal_false_different_num_actual_positives() -> None:
-    assert not RecallResult(num_true_positives=3, num_actual_positives=5).equal(
-        RecallResult(num_true_positives=3, num_actual_positives=4)
+def test_recall_result_equal_false_different_false_negatives() -> None:
+    assert not RecallResult(true_positives=3, false_negatives=2).equal(
+        RecallResult(true_positives=3, false_negatives=3)
     )
 
 
 def test_recall_result_equal_wrong_type() -> None:
-    assert not RecallResult(num_true_positives=3, num_actual_positives=5).equal("not a result")
+    assert not RecallResult(true_positives=3, false_negatives=2).equal("not a result")
 
 
 def test_recall_result_equal_nan_false_by_default() -> None:
-    assert not RecallResult(num_true_positives=float("nan"), num_actual_positives=5).equal(
-        RecallResult(num_true_positives=float("nan"), num_actual_positives=5)
+    assert not RecallResult(true_positives=float("nan"), false_negatives=2).equal(
+        RecallResult(true_positives=float("nan"), false_negatives=2)
     )
 
 
 def test_recall_result_equal_nan_true_with_equal_nan() -> None:
-    assert RecallResult(num_true_positives=float("nan"), num_actual_positives=5).equal(
-        RecallResult(num_true_positives=float("nan"), num_actual_positives=5),
+    assert RecallResult(true_positives=float("nan"), false_negatives=2).equal(
+        RecallResult(true_positives=float("nan"), false_negatives=2),
         equal_nan=True,
     )
 
@@ -161,46 +197,46 @@ def test_recall_result_equal_nan_true_with_equal_nan() -> None:
 
 
 def test_recall_result_allclose_true() -> None:
-    assert RecallResult(num_true_positives=3, num_actual_positives=5).allclose(
-        RecallResult(num_true_positives=3, num_actual_positives=5)
+    assert RecallResult(true_positives=3, false_negatives=2).allclose(
+        RecallResult(true_positives=3, false_negatives=2)
     )
 
 
 def test_recall_result_allclose_within_tolerance() -> None:
-    assert RecallResult(num_true_positives=3.0, num_actual_positives=5).allclose(
-        RecallResult(num_true_positives=3 + 1e-7, num_actual_positives=5),
+    assert RecallResult(true_positives=3.0, false_negatives=2).allclose(
+        RecallResult(true_positives=3 + 1e-7, false_negatives=2),
         rtol=1e-5,
         atol=1e-6,
     )
 
 
 def test_recall_result_allclose_outside_tolerance() -> None:
-    assert not RecallResult(num_true_positives=3, num_actual_positives=5).allclose(
-        RecallResult(num_true_positives=2, num_actual_positives=5),
+    assert not RecallResult(true_positives=3, false_negatives=2).allclose(
+        RecallResult(true_positives=2, false_negatives=2),
         rtol=1e-5,
         atol=1e-8,
     )
 
 
-def test_recall_result_allclose_false_different_num_actual_positives() -> None:
-    assert not RecallResult(num_true_positives=3, num_actual_positives=5).allclose(
-        RecallResult(num_true_positives=3, num_actual_positives=4)
+def test_recall_result_allclose_false_different_false_negatives() -> None:
+    assert not RecallResult(true_positives=3, false_negatives=2).allclose(
+        RecallResult(true_positives=3, false_negatives=3)
     )
 
 
 def test_recall_result_allclose_wrong_type() -> None:
-    assert not RecallResult(num_true_positives=3, num_actual_positives=5).allclose("not a result")
+    assert not RecallResult(true_positives=3, false_negatives=2).allclose("not a result")
 
 
 def test_recall_result_allclose_nan_false_by_default() -> None:
-    assert not RecallResult(num_true_positives=float("nan"), num_actual_positives=5).allclose(
-        RecallResult(num_true_positives=float("nan"), num_actual_positives=5)
+    assert not RecallResult(true_positives=float("nan"), false_negatives=2).allclose(
+        RecallResult(true_positives=float("nan"), false_negatives=2)
     )
 
 
 def test_recall_result_allclose_nan_true_with_equal_nan() -> None:
-    assert RecallResult(num_true_positives=float("nan"), num_actual_positives=5).allclose(
-        RecallResult(num_true_positives=float("nan"), num_actual_positives=5),
+    assert RecallResult(true_positives=float("nan"), false_negatives=2).allclose(
+        RecallResult(true_positives=float("nan"), false_negatives=2),
         equal_nan=True,
     )
 
@@ -209,32 +245,37 @@ def test_recall_result_allclose_nan_true_with_equal_nan() -> None:
 
 
 @pytest.mark.parametrize(
-    ("recall", "num_actual_positives", "expected_tp"),
+    ("recall", "num_actual_positives", "expected_tp", "expected_fn"),
     [
-        pytest.param(0.6, 5, 3, id="standard"),
-        pytest.param(1.0, 5, 5, id="perfect"),
-        pytest.param(0.0, 5, 0, id="zero"),
-        pytest.param(0.5, 4, 2, id="half"),
-        pytest.param(0.5, 2, 1, id="half-small"),
+        pytest.param(0.6, 5, 3, 2, id="standard"),
+        pytest.param(1.0, 5, 5, 0, id="perfect"),
+        pytest.param(0.0, 5, 0, 5, id="zero"),
+        pytest.param(0.5, 4, 2, 2, id="half"),
+        pytest.param(0.5, 2, 1, 1, id="half-small"),
     ],
 )
 def test_recall_result_from_recall(
-    recall: float, num_actual_positives: int, expected_tp: int
+    recall: float,
+    num_actual_positives: int,
+    expected_tp: int,
+    expected_fn: int,
 ) -> None:
     m = RecallResult.from_recall(recall=recall, num_actual_positives=num_actual_positives)
-    assert m.num_true_positives == expected_tp
+    assert m.true_positives == expected_tp
+    assert m.false_negatives == expected_fn
     assert m.num_actual_positives == num_actual_positives
 
 
 def test_recall_result_from_recall_nan_recall() -> None:
     m = RecallResult.from_recall(recall=float("nan"), num_actual_positives=5)
-    assert math.isnan(m.num_true_positives)
-    assert m.num_actual_positives == 5
+    assert math.isnan(m.true_positives)
+    assert math.isnan(m.false_negatives)
 
 
 def test_recall_result_from_recall_zero_denominator() -> None:
     m = RecallResult.from_recall(recall=0.0, num_actual_positives=0)
-    assert m.num_true_positives == 0
+    assert m.true_positives == 0
+    assert m.false_negatives == 0
     assert m.num_actual_positives == 0
 
 
@@ -246,7 +287,7 @@ def test_recall_result_from_recall_returns_instance() -> None:
 
 
 def test_recall_result_from_recall_roundtrip() -> None:
-    m = RecallResult(num_true_positives=3, num_actual_positives=5)
+    m = RecallResult(true_positives=3, false_negatives=2)
     m2 = RecallResult.from_recall(recall=m.recall, num_actual_positives=m.num_actual_positives)
     assert m.equal(m2)
 
@@ -255,54 +296,61 @@ def test_recall_result_from_recall_roundtrip() -> None:
 
 
 @pytest.mark.parametrize(
-    ("num_true_positives", "num_actual_positives", "prefix", "suffix", "expected"),
+    ("true_positives", "false_negatives", "prefix", "suffix", "expected"),
     [
         pytest.param(
             3,
-            5,
+            2,
             "",
             "",
-            {"recall": 0.6, "num_true_positives": 3, "num_actual_positives": 5},
+            {"recall": 0.6, "true_positives": 3, "false_negatives": 2, "num_actual_positives": 5},
             id="standard",
         ),
         pytest.param(
             3,
-            5,
+            2,
             "val_",
             "",
-            {"val_recall": 0.6, "val_num_true_positives": 3, "val_num_actual_positives": 5},
+            {
+                "val_recall": 0.6,
+                "val_true_positives": 3,
+                "val_false_negatives": 2,
+                "val_num_actual_positives": 5,
+            },
             id="prefix-only",
         ),
         pytest.param(
             3,
-            5,
+            2,
             "",
             "_epoch1",
             {
                 "recall_epoch1": 0.6,
-                "num_true_positives_epoch1": 3,
+                "true_positives_epoch1": 3,
+                "false_negatives_epoch1": 2,
                 "num_actual_positives_epoch1": 5,
             },
             id="suffix-only",
         ),
         pytest.param(
             3,
-            5,
+            2,
             "val_",
             "_epoch1",
             {
                 "val_recall_epoch1": 0.6,
-                "val_num_true_positives_epoch1": 3,
+                "val_true_positives_epoch1": 3,
+                "val_false_negatives_epoch1": 2,
                 "val_num_actual_positives_epoch1": 5,
             },
             id="prefix-and-suffix",
         ),
         pytest.param(
             5,
-            5,
+            0,
             "",
             "",
-            {"recall": 1.0, "num_true_positives": 5, "num_actual_positives": 5},
+            {"recall": 1.0, "true_positives": 5, "false_negatives": 0, "num_actual_positives": 5},
             id="perfect",
         ),
         pytest.param(
@@ -310,7 +358,7 @@ def test_recall_result_from_recall_roundtrip() -> None:
             5,
             "",
             "",
-            {"recall": 0.0, "num_true_positives": 0, "num_actual_positives": 5},
+            {"recall": 0.0, "true_positives": 0, "false_negatives": 5, "num_actual_positives": 5},
             id="zero",
         ),
         pytest.param(
@@ -318,22 +366,22 @@ def test_recall_result_from_recall_roundtrip() -> None:
             0,
             "",
             "",
-            {"recall": float("nan"), "num_true_positives": 0, "num_actual_positives": 0},
+            {"recall": 0.0, "true_positives": 0, "false_negatives": 0, "num_actual_positives": 0},
             id="zero-predictions",
         ),
     ],
 )
 def test_recall_result_to_dict(
-    num_true_positives: int,
-    num_actual_positives: int,
+    true_positives: int,
+    false_negatives: int,
     prefix: str,
     suffix: str,
     expected: dict,
 ) -> None:
     assert objects_are_allclose(
         RecallResult(
-            num_true_positives=num_true_positives,
-            num_actual_positives=num_actual_positives,
+            true_positives=true_positives,
+            false_negatives=false_negatives,
         ).to_dict(prefix=prefix, suffix=suffix),
         expected,
         equal_nan=True,
@@ -342,8 +390,26 @@ def test_recall_result_to_dict(
 
 def test_recall_result_to_dict_nan_true_positives() -> None:
     assert objects_are_allclose(
-        RecallResult(num_true_positives=float("nan"), num_actual_positives=5).to_dict(),
-        {"recall": float("nan"), "num_true_positives": float("nan"), "num_actual_positives": 5},
+        RecallResult(true_positives=float("nan"), false_negatives=2).to_dict(),
+        {
+            "recall": float("nan"),
+            "true_positives": float("nan"),
+            "false_negatives": 2,
+            "num_actual_positives": float("nan"),
+        },
+        equal_nan=True,
+    )
+
+
+def test_recall_result_to_dict_nan_false_negatives() -> None:
+    assert objects_are_allclose(
+        RecallResult(true_positives=3, false_negatives=float("nan")).to_dict(),
+        {
+            "recall": float("nan"),
+            "true_positives": 3,
+            "false_negatives": float("nan"),
+            "num_actual_positives": float("nan"),
+        },
         equal_nan=True,
     )
 
@@ -352,17 +418,17 @@ def test_recall_result_to_dict_nan_true_positives() -> None:
 
 
 @pytest.mark.parametrize(
-    ("num_true_positives", "num_actual_positives", "expected"),
+    ("true_positives", "false_negatives", "expected"),
     [
         pytest.param(
             3,
-            5,
+            2,
             "Recall [████████████░░░░░░░░]  0.6000  (3/5)",
             id="standard",
         ),
         pytest.param(
             5,
-            5,
+            0,
             "Recall [████████████████████]  1.0000  (5/5)",
             id="perfect",
         ),
@@ -374,7 +440,7 @@ def test_recall_result_to_dict_nan_true_positives() -> None:
         ),
         pytest.param(
             2,
-            4,
+            2,
             "Recall [██████████░░░░░░░░░░]  0.5000  (2/4)",
             id="half",
         ),
@@ -386,36 +452,40 @@ def test_recall_result_to_dict_nan_true_positives() -> None:
         ),
         pytest.param(
             float("nan"),
-            5,
-            "Recall [????????????????????]  nan  (?/5)",
+            2,
+            "Recall [????????????????????]  nan  (?/?)",
             id="nan-true-positives",
+        ),
+        pytest.param(
+            3,
+            float("nan"),
+            "Recall [????????????????????]  nan  (3/?)",
+            id="nan-false-negatives",
         ),
     ],
 )
 def test_recall_result_to_display(
-    num_true_positives: float,
-    num_actual_positives: int,
+    true_positives: float,
+    false_negatives: float,
     expected: str,
 ) -> None:
     assert (
         RecallResult(
-            num_true_positives=num_true_positives,
-            num_actual_positives=num_actual_positives,
+            true_positives=true_positives,
+            false_negatives=false_negatives,
         ).to_display()
         == expected
     )
 
 
 def test_recall_result_to_display_returns_str() -> None:
-    assert isinstance(
-        RecallResult(num_true_positives=3, num_actual_positives=5).to_display(),
-        str,
-    )
+    assert isinstance(RecallResult(true_positives=3, false_negatives=2).to_display(), str)
 
 
 def test_recall_result_to_display_large_numbers() -> None:
-    assert RecallResult(num_true_positives=1500, num_actual_positives=2500).to_display() == (
-        "Recall [████████████░░░░░░░░]  0.6000  (1,500/2,500)"
+    assert (
+        RecallResult(true_positives=1500, false_negatives=1000).to_display()
+        == "Recall [████████████░░░░░░░░]  0.6000  (1,500/2,500)"
     )
 
 
@@ -424,21 +494,21 @@ def test_recall_result_to_display_large_numbers() -> None:
 
 def test_recall_result_repr() -> None:
     assert (
-        repr(RecallResult(num_true_positives=3, num_actual_positives=5))
-        == "RecallResult(num_true_positives=3, num_actual_positives=5)"
+        repr(RecallResult(true_positives=3, false_negatives=2))
+        == "RecallResult(true_positives=3, false_negatives=2)"
     )
 
 
 def test_recall_result_str() -> None:
     assert (
-        str(RecallResult(num_true_positives=3, num_actual_positives=5))
-        == "RecallResult(num_true_positives=3, num_actual_positives=5)"
+        str(RecallResult(true_positives=3, false_negatives=2))
+        == "RecallResult(true_positives=3, false_negatives=2)"
     )
 
 
-####################################
-#     Tests for compute_recall     #
-####################################
+######################################
+#     Tests for compute_recall       #
+######################################
 
 
 @pytest.mark.parametrize(
