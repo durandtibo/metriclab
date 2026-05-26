@@ -42,7 +42,7 @@ def test_recall_result_nan_false_negatives() -> None:
 def test_recall_result_frozen() -> None:
     m = RecallResult(true_positives=3, false_negatives=2)
     with pytest.raises(FrozenInstanceError):
-        m.true_positives = 2  # type: ignore[misc]
+        m.true_positives = 2
 
 
 def test_recall_result_perfect() -> None:

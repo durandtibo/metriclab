@@ -41,8 +41,8 @@ def test_precision_result_nan_false_positives() -> None:
 
 def test_precision_result_frozen() -> None:
     m = PrecisionResult(true_positives=3, false_positives=1)
-    with pytest.raises(FrozenInstanceError):
-        m.true_positives = 2  # type: ignore[misc]
+    with pytest.raises(FrozenInstanceError, match="cannot assign to field 'true_positives'"):
+        m.true_positives = 2
 
 
 def test_precision_result_perfect() -> None:
