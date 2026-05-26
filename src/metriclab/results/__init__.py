@@ -20,6 +20,7 @@ __all__ = [
     "BalancedAccuracyResult",
     "BaseResult",
     "BinaryConfusionMatrixResult",
+    "BinaryPrecisionResult",
     "PrecisionResult",
     "RecallResult",
     "Result",
@@ -29,6 +30,7 @@ __all__ = [
 from metriclab.results.base import BaseResult
 from metriclab.results.classification.accuracy import AccuracyResult
 from metriclab.results.classification.balanced_accuracy import BalancedAccuracyResult
+from metriclab.results.classification.binary.precision import BinaryPrecisionResult
 from metriclab.results.classification.binary_confmat import BinaryConfusionMatrixResult
 from metriclab.results.classification.precision import PrecisionResult
 from metriclab.results.classification.recall import RecallResult
