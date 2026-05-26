@@ -243,7 +243,7 @@ def test_binary_confusion_matrix_result_from_confusion_matrix_frozen() -> None:
         true_positives=3, true_negatives=4, false_positives=1, false_negatives=2
     )
     with pytest.raises(FrozenInstanceError, match="cannot assign to field 'true_positives'"):
-        m.true_positives = 10  # type: ignore[misc]
+        m.true_positives = 10
 
 
 @pytest.mark.parametrize(

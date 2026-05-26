@@ -29,7 +29,7 @@ def test_result_dict_empty() -> None:
 def test_result_dict_frozen() -> None:
     r = ResultDict({"train": Result({"loss": 0.5})})
     with pytest.raises(FrozenInstanceError, match="cannot assign to field 'results'"):
-        r.results = {}  # type: ignore[misc]
+        r.results = {}
 
 
 def test_result_dict_is_base_result() -> None:

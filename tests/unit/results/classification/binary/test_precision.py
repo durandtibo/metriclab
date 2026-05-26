@@ -35,8 +35,8 @@ def test_binary_precision_result_nan_precision() -> None:
 
 def test_binary_precision_result_frozen() -> None:
     m = BinaryPrecisionResult(precision=0.75, num_predictions=10)
-    with pytest.raises(FrozenInstanceError):
-        m.precision = 0.5  # type: ignore[misc]
+    with pytest.raises(FrozenInstanceError, match="cannot assign to field 'precision'"):
+        m.precision = 0.5
 
 
 def test_binary_precision_result_perfect() -> None:

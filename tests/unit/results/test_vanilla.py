@@ -29,7 +29,7 @@ def test_result_empty_results() -> None:
 def test_result_frozen() -> None:
     r = Result(results={"accuracy": 0.9})
     with pytest.raises(FrozenInstanceError, match="cannot assign to field 'results'"):
-        r.results = {"accuracy": 0.5}  # type: ignore[misc]
+        r.results = {"accuracy": 0.5}
 
 
 def test_result_various_value_types() -> None:
