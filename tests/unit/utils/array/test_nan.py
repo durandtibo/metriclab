@@ -12,6 +12,7 @@ from metriclab.utils.array import (
     is_nan,
     multi_is_nan,
     remove_duplicate_nans,
+    remove_nans,
     validate_nan_policy,
 )
 
@@ -612,6 +613,167 @@ def test_multi_is_nan_all_nan() -> None:
         ),
         np.array([True, True]),
     )
+
+
+##################################################
+#           Tests for remove_nans                #
+##################################################
+
+
+# --- no NaNs: array returned unchanged ---
+
+
+@pytest.mark.parametrize(
+    "arr",
+    [
+        pytest.param(np.array([1.0, 2.0, 3.0]), id="float"),
+        pytest.param(np.array([1, 2, 3]), id="int"),
+        pytest.param(np.array(["cat", "dog", "bear"]), id="string"),
+        pytest.param(np.array(["cat", "dog", "bear"], dtype=object), id="object-string"),
+        pytest.param(np.array([1.0, 2.0, 3.0], dtype=object), id="object-float"),
+        pytest.param(np.array([True, False, True]), id="bool"),
+    ],
+)
+def test_remove_nans_no_nans(arr: np.ndarray) -> None:
+    assert objects_are_equal(remove_nans(arr), arr)
+
+
+# --- all NaNs: empty array returned ---
+
+
+@pytest.mark.parametrize(
+    "arr",
+    [
+        pytest.param(np.array([float("nan")]), id="float-single"),
+        pytest.param(np.array([float("nan"), float("nan")]), id="float-two"),
+        pytest.param(np.array([float("nan")] * 5), id="float-five"),
+        pytest.param(np.array([float("nan")], dtype=object), id="object-single"),
+        pytest.param(np.array([float("nan"), float("nan")], dtype=object), id="object-two"),
+    ],
+)
+def test_remove_nans_all_nans(arr: np.ndarray) -> None:
+    result = remove_nans(arr)
+    assert result.size == 0
+    assert result.dtype == arr.dtype
+
+
+# --- NaNs removed, finite values preserved ---
+
+
+@pytest.mark.parametrize(
+    ("arr", "expected"),
+    [
+        pytest.param(
+            np.array([1.0, float("nan"), 2.0]),
+            np.array([1.0, 2.0]),
+            id="float-nan-middle",
+        ),
+        pytest.param(
+            np.array([float("nan"), 1.0, 2.0]),
+            np.array([1.0, 2.0]),
+            id="float-nan-start",
+        ),
+        pytest.param(
+            np.array([1.0, 2.0, float("nan")]),
+            np.array([1.0, 2.0]),
+            id="float-nan-end",
+        ),
+        pytest.param(
+            np.array([float("nan"), 1.0, float("nan"), 2.0, float("nan")]),
+            np.array([1.0, 2.0]),
+            id="float-nan-multiple",
+        ),
+        pytest.param(
+            np.array([1.0, float("nan"), 2.0], dtype=object),
+            np.array([1.0, 2.0], dtype=object),
+            id="object-float-nan-middle",
+        ),
+        pytest.param(
+            np.array([float("nan"), 1.0, float("nan"), 2.0], dtype=object),
+            np.array([1.0, 2.0], dtype=object),
+            id="object-float-nan-multiple",
+        ),
+    ],
+)
+def test_remove_nans_removes_nans(arr: np.ndarray, expected: np.ndarray) -> None:
+    assert objects_are_equal(remove_nans(arr), expected)
+
+
+# --- mixed object arrays with strings and NaN ---
+
+
+@pytest.mark.parametrize(
+    ("arr", "expected"),
+    [
+        pytest.param(
+            np.array(["cat", float("nan"), "dog"], dtype=object),
+            np.array(["cat", "dog"], dtype=object),
+            id="string-nan-middle",
+        ),
+        pytest.param(
+            np.array([float("nan"), "cat", "dog"], dtype=object),
+            np.array(["cat", "dog"], dtype=object),
+            id="string-nan-start",
+        ),
+        pytest.param(
+            np.array(["cat", "dog", float("nan")], dtype=object),
+            np.array(["cat", "dog"], dtype=object),
+            id="string-nan-end",
+        ),
+        pytest.param(
+            np.array([float("nan"), "cat", float("nan"), "dog", float("nan")], dtype=object),
+            np.array(["cat", "dog"], dtype=object),
+            id="string-nan-multiple",
+        ),
+    ],
+)
+def test_remove_nans_mixed_object(arr: np.ndarray, expected: np.ndarray) -> None:
+    assert objects_are_equal(remove_nans(arr), expected)
+
+
+# --- dtype is preserved ---
+
+
+@pytest.mark.parametrize(
+    ("arr", "expected_dtype"),
+    [
+        pytest.param(np.array([1.0, float("nan")]), np.float64, id="float64"),
+        pytest.param(np.array([1.0, float("nan")], dtype=np.float32), np.float32, id="float32"),
+        pytest.param(np.array([1.0, float("nan")], dtype=object), object, id="object"),
+    ],
+)
+def test_remove_nans_preserves_dtype(arr: np.ndarray, expected_dtype: np.dtype) -> None:
+    result = remove_nans(arr)
+    assert result.dtype == expected_dtype
+
+
+# --- empty array ---
+
+
+def test_remove_nans_empty() -> None:
+    arr = np.array([])
+    assert objects_are_equal(remove_nans(arr), arr)
+
+
+# --- non-1D input raises ---
+
+
+@pytest.mark.parametrize(
+    "arr",
+    [
+        pytest.param(np.array([[1.0, 2.0], [3.0, 4.0]]), id="2d"),
+        pytest.param(np.ones((2, 3, 4)), id="3d"),
+    ],
+)
+def test_remove_nans_non_1d_raises(arr: np.ndarray) -> None:
+    with pytest.raises(ValueError, match=r"input: expected .*D array, got shape"):
+        remove_nans(arr)
+
+
+def test_remove_nans_non_1d_error_includes_shape() -> None:
+    arr = np.ones((3, 4))
+    with pytest.raises(ValueError, match=r"input: expected .*D array, got shape"):
+        remove_nans(arr)
 
 
 ##################################################

@@ -17,6 +17,7 @@ __all__ = [
     "multi_is_nan",
     "preprocess_1d",
     "remove_duplicate_nans",
+    "remove_nans",
     "to_numpy",
     "to_numpy_1d",
     "validate_array_ndim",
@@ -34,6 +35,7 @@ from metriclab.utils.array.nan import (
     is_nan,
     multi_is_nan,
     remove_duplicate_nans,
+    remove_nans,
     validate_nan_policy,
 )
 from metriclab.utils.array.preprocessing import preprocess_1d
