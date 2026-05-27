@@ -15,6 +15,7 @@ from metriclab.functional.classification.multiclass.precision import (
     compute_multiclass_precision,
 )
 from metriclab.results import MulticlassPrecisionResult
+from tests.conftest import ignore_single_label_warning
 
 if TYPE_CHECKING:
     from metriclab.typing import ArrayLike
@@ -263,6 +264,7 @@ def test_multiclass_precision_validates_undefined_precision_before_preprocessing
 # --- basic correctness ---
 
 
+@ignore_single_label_warning
 @pytest.mark.parametrize(
     ("y_true", "y_pred", "expected"),
     [
@@ -306,15 +308,15 @@ def test_multiclass_precision_validates_undefined_precision_before_preprocessing
             id="partial-correctness-3-classes",
         ),
         pytest.param(
-            np.array([0, 1, 2, 3]),
-            np.array([0, 2, 2, 3]),
+            np.array([0, 1, 2, 3, 1]),
+            np.array([0, 2, 2, 3, 1]),
             MulticlassPrecisionResult(
-                macro_precision=0.625,
-                micro_precision=0.75,
-                weighted_precision=0.625,
-                per_class_precision=np.array([1.0, 0.0, 0.5, 1.0]),
-                support=np.array([1, 1, 1, 1]),
-                num_predictions=4,
+                macro_precision=0.875,
+                micro_precision=0.8,
+                weighted_precision=0.9,
+                per_class_precision=np.array([1.0, 1.0, 0.5, 1.0]),
+                support=np.array([1, 2, 1, 1]),
+                num_predictions=5,
             ),
             id="partial-correctness-4-classes",
         ),
@@ -584,6 +586,7 @@ def test_compute_multiclass_precision_string_labels() -> None:
     )
 
 
+@ignore_single_label_warning
 def test_compute_multiclass_precision_single_class() -> None:
     result = compute_multiclass_precision(
         y_true=np.array([0, 0, 0]),

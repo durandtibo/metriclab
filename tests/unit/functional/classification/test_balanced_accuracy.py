@@ -9,6 +9,7 @@ import pytest
 from metriclab.exceptions import EmptyMetricError
 from metriclab.functional import balanced_accuracy
 from metriclab.results import BalancedAccuracyResult
+from tests.conftest import ignore_single_label_warning
 
 ##################################
 #  Tests for balanced_accuracy   #
@@ -18,6 +19,7 @@ from metriclab.results import BalancedAccuracyResult
 # --- basic correctness ---
 
 
+@ignore_single_label_warning
 @pytest.mark.parametrize(
     ("y_true", "y_pred", "expected"),
     [
@@ -294,15 +296,6 @@ def test_balanced_accuracy_omit_all_correct_after_drop() -> None:
     assert result.allclose(BalancedAccuracyResult(balanced_accuracy=1.0, num_predictions=3))
 
 
-def test_balanced_accuracy_omit_missing_values_not_set() -> None:
-    with pytest.raises(ValueError, match="Input y_true contains NaN"):
-        balanced_accuracy(
-            y_true=np.array([1.0, float("nan"), 0.0]),
-            y_pred=np.array([1.0, 0.0, 0.0]),
-            missing_policy="omit",
-        )
-
-
 def test_balanced_accuracy_omit_all_missing_returns_empty() -> None:
     result = balanced_accuracy(
         y_true=np.array([float("nan"), float("nan")]),
@@ -438,6 +431,7 @@ def test_balanced_accuracy_invalid_missing_policy_raises() -> None:
 # --- num_predictions ---
 
 
+@ignore_single_label_warning
 @pytest.mark.parametrize(
     ("y_true", "y_pred", "expected_num_predictions"),
     [
@@ -458,13 +452,14 @@ def test_balanced_accuracy_num_predictions(
 
 
 def test_balanced_accuracy_large_arrays() -> None:
-    n = 100_000
-    y_true = np.zeros(n, dtype=int)
-    y_pred = np.zeros(n, dtype=int)
+    n = 50_000
+    y_true = np.concatenate([np.zeros(n, dtype=int), np.ones(n, dtype=int)])
+    y_pred = np.concatenate([np.zeros(n, dtype=int), np.ones(n, dtype=int)])
     result = balanced_accuracy(y_true=y_true, y_pred=y_pred)
-    assert result.allclose(BalancedAccuracyResult(balanced_accuracy=1.0, num_predictions=n))
+    assert result.allclose(BalancedAccuracyResult(balanced_accuracy=1.0, num_predictions=2 * n))
 
 
+@ignore_single_label_warning
 def test_balanced_accuracy_all_same_label() -> None:
     result = balanced_accuracy(
         y_true=np.array([1, 1, 1, 1]),

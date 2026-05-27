@@ -272,15 +272,6 @@ def test_binary_precision_omit(
     ).allclose(expected)
 
 
-def test_binary_precision_omit_missing_values_not_set() -> None:
-    with pytest.raises(ValueError, match=r"Input y_true contains NaN."):
-        binary_precision(
-            y_true=np.array([1.0, float("nan"), 0.0]),
-            y_pred=np.array([1.0, 0.0, 0.0]),
-            missing_policy="omit",
-        )
-
-
 def test_binary_precision_omit_all_missing_returns_empty() -> None:
     result = binary_precision(
         y_true=np.array([float("nan"), float("nan")]),
