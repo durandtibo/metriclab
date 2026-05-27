@@ -7,15 +7,17 @@ __all__ = ["contains_value"]
 import math
 from typing import TYPE_CHECKING, Any
 
+import numpy as np
+
 from metriclab.utils.array.nan import contains_nan
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    import numpy as np
+    from metriclab.typing import ArrayLike
 
 
-def contains_value(arr: np.ndarray, value: Any) -> bool:
+def contains_value(arr: ArrayLike, value: Any) -> bool:
     r"""Check if a value is present in a numpy array.
 
     Works correctly with special values: ``nan`` (using
@@ -52,6 +54,10 @@ def contains_value(arr: np.ndarray, value: Any) -> bool:
 
         ```
     """
+    arr = np.asarray(arr)
+    if arr.size == 0:
+        return False
+
     if isinstance(value, float) and math.isnan(value):
         return contains_nan(arr)
 
@@ -98,6 +104,5 @@ def multi_contains_value(arrays: Sequence[np.ndarray], value: Any) -> bool:
         ```
     """
     if not arrays:
-        msg = "'arrays' cannot be empty"
-        raise ValueError(msg)
+        return False
     return any(contains_value(a, value) for a in arrays)

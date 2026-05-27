@@ -26,6 +26,7 @@ from metriclab.utils.array import contains_value, multi_contains_value
         pytest.param(np.array([1, 1, 1]), 2, False, id="int-all-same-absent"),
         pytest.param(np.array([1, 2, 3]), 2.0, True, id="int-array-float-value"),
         pytest.param(np.array([1, 2, 3]), 4.0, False, id="int-array-float-value-absent"),
+        pytest.param([1, 2, 3], 2, True, id="int-list"),
     ],
 )
 def test_contains_value_int_array(arr: np.ndarray, value: Any, expected: bool) -> None:
@@ -46,6 +47,7 @@ def test_contains_value_int_array(arr: np.ndarray, value: Any, expected: bool) -
         pytest.param(np.array([1.0, 2.0, 3.0]), 4, False, id="float-array-int-value-absent"),
         pytest.param(np.array([0.0, 1.0, 2.0]), 0.0, True, id="float-zero-present"),
         pytest.param(np.array([-1.0, 0.0, 1.0]), -1.0, True, id="float-negative-present"),
+        pytest.param([1.0, 2.0, 3.0], 2.0, True, id="float-list"),
     ],
 )
 def test_contains_value_float_array(arr: np.ndarray, value: Any, expected: bool) -> None:
@@ -724,8 +726,7 @@ def test_multi_contains_value_different_shapes() -> None:
 
 
 def test_multi_contains_value_empty_input_raises() -> None:
-    with pytest.raises(ValueError, match="'arrays' cannot be empty"):
-        multi_contains_value([], value=2)
+    assert not multi_contains_value([], value=2)
 
 
 def test_multi_contains_value_empty_arrays() -> None:
