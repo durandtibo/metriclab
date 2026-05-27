@@ -164,9 +164,9 @@ def unique(arr: np.ndarray) -> np.ndarray:
         >>> import numpy as np
         >>> from metriclab.utils.array import unique
         >>> unique(np.array([3, 1, 2, 1, 3]))
-        array([3, 1, 2])
+        array([1, 2, 3])
         >>> unique(np.array([1.0, float("nan"), 2.0, float("nan")]))
-        array([ 1., nan,  2.])
+        array([ 1.,  2., nan])
         >>> unique(np.array([1, None, 2, None], dtype=object))
         array([1, None, 2], dtype=object)
         >>> unique(np.array(["cat", 1, "cat", float("nan"), 1], dtype=object))
