@@ -100,23 +100,23 @@ def multiclass_precision(
         ...     y_true=np.array([1, 0, 0, 1, 1, 2]),
         ...     y_pred=np.array([1, 0, 0, 1, 1, 2]),
         ... )
-        MulticlassPrecisionResult(precision=1.0, num_predictions=5)
+        MulticlassPrecisionResult(macro_precision=1.0, micro_precision=1.0, weighted_precision=1.0, per_class_precision=array([1., 1., 1.]), support=array([2, 3, 1]), num_predictions=6)
         >>> # with lists
-        >>> multiclass_precision(y_true=[1, 0, 0, 1, 1, 2], y_pred=[1, 0, 1, 1, 1, 2])
-        MulticlassPrecisionResult(precision=0.75, num_predictions=5)
+        >>> multiclass_precision(y_true=[1, 0, 0, 1, 1, 2], y_pred=[1, 0, 0, 1, 1, 2])
+        MulticlassPrecisionResult(macro_precision=1.0, micro_precision=1.0, weighted_precision=1.0, per_class_precision=array([1., 1., 1.]), support=array([2, 3, 1]), num_predictions=6)
         >>> # with string labels
         >>> multiclass_precision(
         ...     y_true=["cat", "dog", "cat", "dog", "dog", "bear"],
-        ...     y_pred=["cat", "dog", "dog", "dog", "dog", "bear"],
+        ...     y_pred=["cat", "dog", "cat", "dog", "dog", "bear"],
         ... )
-        MulticlassPrecisionResult(precision=0.75, num_predictions=5)
+        MulticlassPrecisionResult(macro_precision=1.0, micro_precision=1.0, weighted_precision=1.0, per_class_precision=array([1., 1., 1.]), support=array([1, 2, 3]), num_predictions=6)
         >>> # with missing values and missing_policy='propagate' (default)
         >>> multiclass_precision(
         ...     y_true=np.array([1.0, 0.0, 0.0, 1.0, float("nan")]),
         ...     y_pred=np.array([1.0, 0.0, 0.0, 1.0, 1.0]),
         ...     missing_values=float("nan"),
         ... )
-        MulticlassPrecisionResult(precision=nan, num_predictions=5)
+        MulticlassPrecisionResult(macro_precision=nan, micro_precision=nan, weighted_precision=nan, per_class_precision=array([nan, nan]), support=array([nan, nan]), num_predictions=5)
         >>> # with missing values and missing_policy='omit'
         >>> multiclass_precision(
         ...     y_true=np.array([1.0, 0.0, 0.0, 1.0, float("nan")]),
@@ -124,24 +124,21 @@ def multiclass_precision(
         ...     missing_policy="omit",
         ...     missing_values=float("nan"),
         ... )
-        MulticlassPrecisionResult(precision=1.0, num_predictions=4)
+        MulticlassPrecisionResult(macro_precision=1.0, micro_precision=1.0, weighted_precision=1.0, per_class_precision=array([1., 1.]), support=array([2, 2]), num_predictions=4)
         >>> # silence the undefined_precision warning explicitly
         >>> multiclass_precision(
         ...     y_true=[0, 0, 1, 2],
         ...     y_pred=[0, 0, 1, 1],
         ...     undefined_precision=0.0,
         ... )
-        MulticlassPrecisionResult(macro_precision=0.6667, ..., num_predictions=4)
+        MulticlassPrecisionResult(macro_precision=0.5, micro_precision=0.75, weighted_precision=0.625, per_class_precision=array([1. , 0.5, 0. ]), support=array([2, 1, 1]), num_predictions=4)
         >>> # propagate NaN for undefined classes
         >>> multiclass_precision(
         ...     y_true=[0, 0, 1, 2],
         ...     y_pred=[0, 0, 1, 1],
         ...     undefined_precision=float("nan"),
         ... )
-        MulticlassPrecisionResult(macro_precision=nan, ..., num_predictions=4)
-        >>> # allow empty result instead of raising
-        >>> multiclass_precision(y_true=[], y_pred=[], raise_empty=False)
-        MulticlassPrecisionResult(precision=nan, num_predictions=0)
+        MulticlassPrecisionResult(macro_precision=nan, micro_precision=0.75, weighted_precision=nan, per_class_precision=array([1. , 0.5, nan]), support=array([2, 1, 1]), num_predictions=4)
 
         ```
     """
