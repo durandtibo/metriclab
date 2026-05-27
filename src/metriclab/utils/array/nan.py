@@ -10,6 +10,7 @@ __all__ = [
     "is_nan",
     "multi_is_nan",
     "remove_duplicate_nans",
+    "remove_nans",
     "validate_nan_policy",
 ]
 
@@ -197,6 +198,47 @@ def multi_is_nan(arrays: Sequence[np.ndarray]) -> np.ndarray:
         msg = "'arrays' cannot be empty"
         raise ValueError(msg)
     return np.logical_or.reduce([is_nan(a) for a in arrays])
+
+
+def remove_nans(arr: np.ndarray) -> np.ndarray:
+    """Return *arr* with all NaN values removed.
+
+    All dtypes are handled safely: non-numeric arrays that cannot
+    contain NaN are returned unchanged.
+
+    Args:
+        arr: A 1-D array to remove NaN values from.
+
+    Returns:
+        A 1-D array with no NaN values. Returns an empty array when
+            all values are NaN or the input is empty.
+
+    Raises:
+        ValueError: if ``arr`` is not 1-D.
+
+    Example:
+        ```pycon
+        >>> import numpy as np
+        >>> remove_nans(np.array([1.0, float("nan"), 2.0, float("nan")]))
+        array([1., 2.])
+        >>> remove_nans(np.array([1.0, 2.0, 3.0]))
+        array([1., 2., 3.])
+        >>> remove_nans(np.array(["cat", "dog"], dtype=object))
+        array(['cat', 'dog'], dtype=object)
+        >>> remove_nans(np.array([float("nan"), float("nan")]))
+        array([], dtype=float64)
+        >>> remove_nans(np.array([]))
+        array([], dtype=float64)
+
+        ```
+    """
+    validate_array_ndim(arr, ndim=1)
+
+    nan_mask = is_nan(arr)
+    if not nan_mask.any():
+        return arr
+
+    return arr[~nan_mask]
 
 
 def remove_duplicate_nans(arr: np.ndarray) -> np.ndarray:
