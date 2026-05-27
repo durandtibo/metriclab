@@ -6,8 +6,11 @@ directly from inputs without storing intermediate state.
 
 from __future__ import annotations
 
-__all__ = ["accuracy", "balanced_accuracy", "binary_precision"]
+__all__ = ["accuracy", "balanced_accuracy", "binary_precision", "multiclass_precision"]
 
 from metriclab.functional.classification.accuracy import accuracy
 from metriclab.functional.classification.balanced_accuracy import balanced_accuracy
 from metriclab.functional.classification.binary.precision import binary_precision
+from metriclab.functional.classification.multiclass.precision import (
+    multiclass_precision,
+)

@@ -6,21 +6,203 @@ NumPy arrays, and Python sequences.
 
 from __future__ import annotations
 
+__all__ = ["multiclass_precision"]
+
+import warnings
+from typing import TYPE_CHECKING, Any, Literal
+
 import numpy as np
 from sklearn.metrics import confusion_matrix
 
+from metriclab.exceptions import EmptyMetricError
 from metriclab.results import MulticlassPrecisionResult
+from metriclab.utils.array import (
+    multi_contains_value,
+    multi_count_unique_non_missing,
+    preprocess_1d,
+    to_numpy_1d,
+)
+from metriclab.utils.sentinel import NOT_SET
+
+if TYPE_CHECKING:
+    from metriclab.typing import ArrayLike
+    from metriclab.utils.missing import MissingPolicy
+
+
+# Precision is undefined for a class when no samples were predicted as
+# that class (i.e. TP + FP = 0). This type controls what value to
+# substitute in that case.
+UndefinedPrecisionValue = float | Literal["nan", "warn"]
+
+
+def multiclass_precision(
+    y_true: ArrayLike,
+    y_pred: ArrayLike,
+    *,
+    missing_policy: MissingPolicy = "propagate",
+    missing_values: Any = NOT_SET,
+    raise_empty: bool = True,
+    undefined_precision: UndefinedPrecisionValue = "warn",
+) -> MulticlassPrecisionResult:
+    r"""Compute the multiclass precision score.
+
+    Args:
+        y_true: The ground truth target labels.
+        y_pred: The predicted labels.
+        missing_policy: The policy for handling missing values.
+            Valid values are ``'omit'``, ``'propagate'``, or
+            ``'raise'``. ``'omit'`` removes rows where any array
+            equals ``missing_values`` before computing the metric.
+            ``'propagate'`` keeps the rows but returns
+            ``precision=nan`` when missing values are detected.
+            ``'raise'`` raises a ``ValueError`` if any array contains
+            ``missing_values``.
+        missing_values: The value to treat as missing. If not set,
+            missing value handling is disabled regardless of
+            ``missing_policy``.
+        raise_empty: If ``True``, raises ``EmptyMetricError`` when
+            there are no valid predictions. If ``False``, returns a
+            ``MulticlassPrecisionResult`` with ``num_predictions=0``
+            and ``precision=nan``.
+        undefined_precision: The value to substitute when precision is
+            undefined for a class because no samples were predicted as
+            that class (i.e. ``TP + FP == 0``). Accepted values:
+
+            - ``0.0``: substitute zero (matches sklearn default).
+            - ``1.0``: substitute one (optimistic; use when absent
+              classes should not penalise the score).
+            - ``float('nan')``: substitute NaN, which then propagates
+              into macro/weighted/micro averages.
+            - ``"nan"``: string alias for ``float('nan')``.
+            - ``"warn"`` *(default)*: substitutes ``0.0`` and emits a
+              ``UserWarning`` listing the affected classes.
+
+    Returns:
+        A ``MulticlassPrecisionResult``. When missing values are present
+            and ``missing_policy='propagate'``, the result keeps
+            ``num_predictions`` and sets ``precision`` to ``nan``.
+
+    Raises:
+        EmptyMetricError: if there are no valid predictions and
+            ``raise_empty`` is ``True``.
+        ValueError: if ``missing_policy`` is invalid.
+        ValueError: if ``y_true`` or ``y_pred`` contains
+            ``missing_values`` and ``missing_policy`` is ``'raise'``.
+        ValueError: if ``undefined_precision`` is not one of the
+            accepted values.
+
+    Example:
+        ```pycon
+        >>> import numpy as np
+        >>> from metriclab.functional import multiclass_precision
+        >>> # with numpy arrays
+        >>> multiclass_precision(
+        ...     y_true=np.array([1, 0, 0, 1, 1, 2]),
+        ...     y_pred=np.array([1, 0, 0, 1, 1, 2]),
+        ... )
+        MulticlassPrecisionResult(precision=1.0, num_predictions=5)
+        >>> # with lists
+        >>> multiclass_precision(y_true=[1, 0, 0, 1, 1, 2], y_pred=[1, 0, 1, 1, 1, 2])
+        MulticlassPrecisionResult(precision=0.75, num_predictions=5)
+        >>> # with string labels
+        >>> multiclass_precision(
+        ...     y_true=["cat", "dog", "cat", "dog", "dog", "bear"],
+        ...     y_pred=["cat", "dog", "dog", "dog", "dog", "bear"],
+        ... )
+        MulticlassPrecisionResult(precision=0.75, num_predictions=5)
+        >>> # with missing values and missing_policy='propagate' (default)
+        >>> multiclass_precision(
+        ...     y_true=np.array([1.0, 0.0, 0.0, 1.0, float("nan")]),
+        ...     y_pred=np.array([1.0, 0.0, 0.0, 1.0, 1.0]),
+        ...     missing_values=float("nan"),
+        ... )
+        MulticlassPrecisionResult(precision=nan, num_predictions=5)
+        >>> # with missing values and missing_policy='omit'
+        >>> multiclass_precision(
+        ...     y_true=np.array([1.0, 0.0, 0.0, 1.0, float("nan")]),
+        ...     y_pred=np.array([1.0, 0.0, 0.0, 1.0, 1.0]),
+        ...     missing_policy="omit",
+        ...     missing_values=float("nan"),
+        ... )
+        MulticlassPrecisionResult(precision=1.0, num_predictions=4)
+        >>> # silence the undefined_precision warning explicitly
+        >>> multiclass_precision(
+        ...     y_true=[0, 0, 1, 2],
+        ...     y_pred=[0, 0, 1, 1],
+        ...     undefined_precision=0.0,
+        ... )
+        MulticlassPrecisionResult(macro_precision=0.6667, ..., num_predictions=4)
+        >>> # propagate NaN for undefined classes
+        >>> multiclass_precision(
+        ...     y_true=[0, 0, 1, 2],
+        ...     y_pred=[0, 0, 1, 1],
+        ...     undefined_precision=float("nan"),
+        ... )
+        MulticlassPrecisionResult(macro_precision=nan, ..., num_predictions=4)
+        >>> # allow empty result instead of raising
+        >>> multiclass_precision(y_true=[], y_pred=[], raise_empty=False)
+        MulticlassPrecisionResult(precision=nan, num_predictions=0)
+
+        ```
+    """
+    y_true, y_pred = preprocess_1d(
+        arrays=[to_numpy_1d(y_true), to_numpy_1d(y_pred)],
+        missing_policy=missing_policy,
+        missing_values=missing_values,
+    )
+
+    num_predictions = y_true.size
+    if num_predictions == 0:
+        if raise_empty:
+            msg = (
+                "Cannot compute precision because 'y_true' and 'y_pred' are empty. "
+                "Use 'raise_empty=False' to return a result with 'num_predictions=0' instead."
+            )
+            raise EmptyMetricError(msg)
+        return compute_multiclass_precision(
+            y_true=y_true,
+            y_pred=y_pred,
+            undefined_precision=undefined_precision,
+        )
+
+    # When missing_policy is 'propagate', check for missing values in
+    # the arrays. When 'omit', rows have already been dropped so this
+    # check always returns False. When 'raise', preprocess_1d already
+    # raised if missing values were present.
+    has_missing = (
+        missing_values is not NOT_SET
+        and missing_policy == "propagate"
+        and multi_contains_value([y_true, y_pred], value=missing_values)
+    )
+    if has_missing:
+        n_classes = multi_count_unique_non_missing([y_true, y_pred], missing_values=missing_values)
+        return MulticlassPrecisionResult(
+            macro_precision=float("nan"),
+            micro_precision=float("nan"),
+            per_class_precision=np.array([float("nan")] * n_classes, dtype=np.float64),
+            support=np.array([float("nan")] * n_classes, dtype=np.float64),
+            weighted_precision=float("nan"),
+            num_predictions=y_true.size,
+        )
+
+    return compute_multiclass_precision(
+        y_true=y_true,
+        y_pred=y_pred,
+        undefined_precision=undefined_precision,
+    )
 
 
 def compute_multiclass_precision(
     y_true: np.ndarray,
     y_pred: np.ndarray,
+    *,
+    undefined_precision: UndefinedPrecisionValue = "warn",
 ) -> MulticlassPrecisionResult:
     r"""Compute multiclass precision metrics from true and predicted
     labels.
 
     This function calculates per-class precision scores alongside macro, micro,
-    and weighted averages. It mimics the behavior of
+    and weighted averages. It mimics the behaviour of
     `sklearn.metrics.precision_score` but aggregates all averages into a
     single, structured result object and gracefully handles zero-prediction
     edge cases.
@@ -30,17 +212,25 @@ def compute_multiclass_precision(
     $$Precision = \frac{TP}{TP + FP}$$
 
     Args:
-        y_true: Ground truth (correct) target values. Shape: `(n_samples,)`.
-        y_pred: Estimated targets as returned by a classifier. Shape: `(n_samples,)`.
+        y_true: Ground truth (correct) target values. Shape: ``(n_samples,)``.
+        y_pred: Estimated targets as returned by a classifier. Shape: ``(n_samples,)``.
+        undefined_precision: Substitution value when precision is undefined
+            for a class because no samples were predicted as that class
+            (i.e. ``TP + FP == 0``). See :func:`multiclass_precision` for
+            the full list of accepted values.
 
     Returns:
-        A MulticlassPrecisionResult instance container housing:
-            - macro_precision: Unweighted mean of per-class precision.
-            - micro_precision: Global precision across all classes.
-            - weighted_precision: Precision weighted by class support.
-            - per_class_precision: Array of precisions for each individual class.
-            - support: Number of true instances for each class.
-            - num_predictions: Total number of samples evaluated.
+        A ``MulticlassPrecisionResult`` containing:
+            - ``macro_precision``: unweighted mean of per-class precision.
+            - ``micro_precision``: global precision computed across all classes.
+            - ``weighted_precision``: precision weighted by per-class support.
+            - ``per_class_precision``: array of precision for each individual class.
+            - ``support``: number of true instances for each class.
+            - ``num_predictions``: total number of samples evaluated.
+
+    Raises:
+        ValueError: if ``undefined_precision`` is not one of the
+            accepted values.
 
     Example:
         ```pycon
@@ -58,43 +248,49 @@ def compute_multiclass_precision(
 
         ```
     """
-    # Coerce to numpy arrays gracefully to guarantee .size works,
-    # and handle empty array edge cases seamlessly.
-    y_true = np.asarray(y_true)
-    y_pred = np.asarray(y_pred)
+    _validate_undefined_precision(undefined_precision)
 
     if y_true.size == 0:
         return MulticlassPrecisionResult(
-            macro_precision=0.0,
-            micro_precision=0.0,
+            macro_precision=float("nan"),
+            micro_precision=float("nan"),
             per_class_precision=np.array([], dtype=np.float64),
             support=np.array([], dtype=np.int64),
-            weighted_precision=0.0,
+            weighted_precision=float("nan"),
             num_predictions=0,
         )
 
     cm = confusion_matrix(y_true=y_true, y_pred=y_pred)
+    labels = np.unique(np.concatenate([y_true, y_pred]))
 
-    # per-class: TP[i] / (TP[i] + FP[i])
-    true_positives = np.diag(cm)  # TP per class
-    positive_predictions = cm.sum(axis=0)  # TP + FP per class (predicted positives)
-    actual_positives = cm.sum(axis=1)  # TP + FN per class (actual positives)
+    true_positives = np.diag(cm)
+    positive_predictions = cm.sum(axis=0)  # TP + FP per class
+    actual_positives = cm.sum(axis=1)  # TP + FN per class
 
-    with np.errstate(divide="ignore", invalid="ignore"):
-        per_class = np.where(
-            positive_predictions > 0,
-            true_positives / positive_predictions,
-            0.0,
-        )
+    undefined_mask = positive_predictions == 0
 
-    # macro: unweighted mean over classes
-    macro = float(per_class.mean())
+    fill = _resolve_fill_value(
+        undefined_mask=undefined_mask,
+        labels=labels,
+        undefined_precision=undefined_precision,
+    )
 
-    # weighted: weighted by actual positives (support) per class
+    per_class = np.where(
+        ~undefined_mask,
+        true_positives / np.where(undefined_mask, 1, positive_predictions),
+        fill,
+    )
+
+    # Macro: unweighted mean. NaN fill propagates naturally; 0.0/1.0
+    # fill affects the average as documented.
+    macro = float(np.mean(per_class))
+
+    # Weighted: weighted by support. NaN fill propagates naturally;
+    # 0.0/1.0 fill is weighted correctly by actual_positives.
     total_actual = actual_positives.sum()
-    weighted = float(np.average(per_class, weights=actual_positives) if total_actual > 0 else 0.0)
+    weighted = float(np.average(per_class, weights=actual_positives)) if total_actual > 0 else 0.0
 
-    # micro: global TP / (global TP + global FP)
+    # Micro: global TP / (global TP + global FP).
     total_tp = true_positives.sum()
     total_pp = positive_predictions.sum()
     micro = float(total_tp / total_pp if total_pp > 0 else 0.0)
@@ -107,3 +303,49 @@ def compute_multiclass_precision(
         weighted_precision=weighted,
         num_predictions=y_true.size,
     )
+
+
+def _validate_undefined_precision(value: UndefinedPrecisionValue) -> None:
+    """Raise ``ValueError`` if *value* is not a valid
+    ``UndefinedPrecisionValue``."""
+    if isinstance(value, float) or (isinstance(value, str) and value in {"nan", "warn"}):
+        return
+    msg = (
+        f"Invalid 'undefined_precision' value {value!r}. "
+        "Expected a float (e.g. 0.0, 1.0, float('nan')) or one of the "
+        "string aliases 'nan' or 'warn'."
+    )
+    raise ValueError(msg)
+
+
+def _resolve_fill_value(
+    *,
+    undefined_mask: np.ndarray,
+    labels: np.ndarray,
+    undefined_precision: UndefinedPrecisionValue,
+) -> float:
+    """Return the fill value for undefined per-class precision entries.
+
+    Emits a ``UserWarning`` when ``undefined_precision='warn'`` and at
+    least one class has no positive predictions.
+    """
+    if not undefined_mask.any():
+        return 0.0  # fill is irrelevant; no undefined classes
+
+    if undefined_precision == "nan":
+        return float("nan")
+
+    if undefined_precision == "warn":
+        affected = labels[undefined_mask].tolist()
+        warnings.warn(
+            f"Precision is undefined for {len(affected)} class(es) with no positive "
+            f"predictions: {affected}. Substituting 0.0. Pass "
+            "'undefined_precision=0.0' to silence this warning, or "
+            "'undefined_precision=float(\"nan\")' to propagate NaN instead.",
+            UserWarning,
+            stacklevel=4,
+        )
+        return 0.0
+
+    # Covers float values including float('nan') passed directly.
+    return float(undefined_precision)
