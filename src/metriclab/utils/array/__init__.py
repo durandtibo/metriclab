@@ -15,12 +15,14 @@ __all__ = [
     "multi_count_unique_non_missing",
     "multi_equal_to",
     "multi_is_nan",
+    "multi_unique",
     "preprocess_1d",
     "remove_duplicate_nans",
     "remove_nans",
     "remove_values",
     "to_numpy",
     "to_numpy_1d",
+    "unique",
     "validate_array_ndim",
     "validate_nan_policy",
     "validate_same_shape",
@@ -46,4 +48,6 @@ from metriclab.utils.array.shape import validate_array_ndim, validate_same_shape
 from metriclab.utils.array.unique import (
     count_unique_non_missing,
     multi_count_unique_non_missing,
+    multi_unique,
+    unique,
 )
