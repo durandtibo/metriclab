@@ -9,12 +9,15 @@ __all__ = [
     "contains_nan",
     "is_nan",
     "multi_is_nan",
+    "remove_duplicate_nans",
     "validate_nan_policy",
 ]
 
 from typing import TYPE_CHECKING, Literal
 
 import numpy as np
+
+from metriclab.utils.array.shape import validate_array_ndim
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -194,3 +197,45 @@ def multi_is_nan(arrays: Sequence[np.ndarray]) -> np.ndarray:
         msg = "'arrays' cannot be empty"
         raise ValueError(msg)
     return np.logical_or.reduce([is_nan(a) for a in arrays])
+
+
+def remove_duplicate_nans(arr: np.ndarray) -> np.ndarray:
+    """Return *arr* with duplicate NaN values collapsed to a single NaN
+    appended at the end.
+
+    A single NaN is preserved when present. Arrays with zero or one NaN
+    are returned unchanged. All dtypes are handled safely: non-numeric
+    arrays that cannot contain NaN are returned unchanged.
+
+    Args:
+        arr: A 1-D array to remove duplicate NaNs from.
+
+    Returns:
+        A 1-D array with at most one NaN value. When duplicates are
+            removed, the single remaining NaN is placed at the end.
+
+    Raises:
+        ValueError: if ``arr`` is not 1-D.
+
+    Example:
+        ```pycon
+        >>> import numpy as np
+        >>> from metriclab.utils.array import remove_duplicate_nans
+        >>> remove_duplicate_nans(np.array([1.0, float("nan"), 2.0, float("nan")]))
+        array([ 1.,  2., nan])
+        >>> remove_duplicate_nans(np.array([1.0, 2.0, 3.0]))
+        array([1., 2., 3.])
+        >>> remove_duplicate_nans(np.array(["cat", "dog"], dtype=object))
+        array(['cat', 'dog'], dtype=object)
+        >>> remove_duplicate_nans(np.array([]))
+        array([], dtype=float64)
+
+        ```
+    """
+    validate_array_ndim(arr, ndim=1)
+
+    nan_mask = is_nan(arr)
+    if int(nan_mask.sum()) <= 1:
+        return arr
+
+    return np.concatenate([arr[~nan_mask], np.array([float("nan")], dtype=arr.dtype)])
