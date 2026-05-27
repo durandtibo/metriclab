@@ -216,6 +216,8 @@ def test_binary_confusion_matrix_result_from_confusion_matrix() -> None:
         pytest.param([1.0], id="list"),
         pytest.param([0.5, 1.0, 2.0], id="list-multiple"),
         pytest.param((0.5, 1.0, 2.0), id="tuple-multiple"),
+        pytest.param([], id="empty-list"),
+        pytest.param((), id="empty-tuple"),
     ],
 )
 def test_binary_confusion_matrix_result_from_confusion_matrix_betas_sequence(
@@ -236,6 +238,13 @@ def test_binary_confusion_matrix_result_from_confusion_matrix_multiple_betas() -
         betas=[0.5, 1.0, 2.0],
     )
     assert m.f_beta_scores == {0.5: 0.7142857142857143, 1.0: 0.6666666666666665, 2.0: 0.625}
+
+
+def test_binary_confusion_matrix_result_from_confusion_matrix_empty_betas() -> None:
+    m = BinaryConfusionMatrixResult.from_confusion_matrix(
+        true_positives=3, true_negatives=4, false_positives=1, false_negatives=2, betas=[]
+    )
+    assert m.f_beta_scores == {}
 
 
 def test_binary_confusion_matrix_result_from_confusion_matrix_frozen() -> None:
@@ -979,6 +988,26 @@ def test_binary_confusion_matrix_result_allclose_wrong_type() -> None:
             },
             id="all-correct",
         ),
+        pytest.param(
+            3,
+            4,
+            1,
+            2,
+            [],
+            {
+                "accuracy": 0.7,
+                "precision": 0.75,
+                "recall": 0.6,
+                "specificity": 0.8,
+                "num_correct_predictions": 7,
+                "num_predictions": 10,
+                "true_positives": 3,
+                "true_negatives": 4,
+                "false_positives": 1,
+                "false_negatives": 2,
+            },
+            id="empty-betas",
+        ),
     ],
 )
 def test_binary_confusion_matrix_result_to_dict(
@@ -1217,6 +1246,23 @@ def test_binary_confusion_matrix_result_to_dict_nan_counts() -> None:
                 "F1          [░░░░░░░░░░░░░░░░░░░░]  0.0000"
             ),
             id="zero-predictions",
+        ),
+        pytest.param(
+            3,
+            4,
+            1,
+            2,
+            [],
+            (
+                "Binary Confusion Matrix\n"
+                "-----------------------\n"
+                "n=10  TP=3  TN=4  FP=1  FN=2\n"
+                "Accuracy    [██████████████░░░░░░]  0.7000  (7/10)\n"
+                "Precision   [███████████████░░░░░]  0.7500  (3/4)\n"
+                "Recall      [████████████░░░░░░░░]  0.6000  (3/5)\n"
+                "Specificity [████████████████░░░░]  0.8000  (4/5)"
+            ),
+            id="empty-betas",
         ),
     ],
 )

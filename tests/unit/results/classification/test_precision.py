@@ -276,6 +276,12 @@ def test_precision_result_from_precision_nan_precision() -> None:
     assert math.isnan(m.false_positives)
 
 
+def test_precision_result_from_precision_nan_num_positive_predictions() -> None:
+    m = PrecisionResult.from_precision(precision=0.75, num_positive_predictions=float("nan"))
+    assert math.isnan(m.true_positives)
+    assert math.isnan(m.false_positives)
+
+
 def test_precision_result_from_precision_zero_denominator() -> None:
     m = PrecisionResult.from_precision(precision=0.0, num_positive_predictions=0)
     assert m.true_positives == 0
