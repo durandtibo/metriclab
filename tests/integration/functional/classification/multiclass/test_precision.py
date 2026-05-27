@@ -2,9 +2,7 @@ import numpy as np
 import pytest
 from sklearn.metrics import precision_recall_fscore_support, precision_score
 
-from metriclab.functional.classification.multiclass.precision import (
-    compute_multiclass_precision,
-)
+from metriclab.functional import multiclass_precision
 from metriclab.results import MulticlassPrecisionResult
 
 ##############################################
@@ -70,18 +68,25 @@ from metriclab.results import MulticlassPrecisionResult
             np.array([5, 12, 12, 7, 7, 5]),
             id="non-sequential-sparse-integer-labels",
         ),
+        pytest.param(
+            np.array([0, 0, 0, 0]),
+            np.array([1, 1, 1, 1]),
+            id="different-labels",
+        ),
     ],
 )
-def test_compute_multiclass_precision_against_sklearn(
-    y_true: np.ndarray, y_pred: np.ndarray
+@pytest.mark.parametrize("undefined_precision", [0.0, 1.0])
+def test_multiclass_precision_against_sklearn(
+    y_true: np.ndarray, y_pred: np.ndarray, undefined_precision: float
 ) -> None:
-    # 1. Dynamically compute the baseline averages using standard precision_recall_fscore_support
-    # We pass zero_division=0.0 to match your internal np.where logic
-    macro_p = precision_score(y_true, y_pred, average="macro", zero_division=0.0)
-    micro_p = precision_score(y_true, y_pred, average="micro", zero_division=0.0)
-    weighted_p = precision_score(y_true, y_pred, average="weighted", zero_division=0.0)
+    # 1. Dynamically compute the baseline averages using sklearn
+    macro_p = precision_score(y_true, y_pred, average="macro", zero_division=undefined_precision)
+    micro_p = precision_score(y_true, y_pred, average="micro", zero_division=undefined_precision)
+    weighted_p = precision_score(
+        y_true, y_pred, average="weighted", zero_division=undefined_precision
+    )
     per_class_p, _, _, expected_support = precision_recall_fscore_support(
-        y_true, y_pred, average=None, zero_division=0.0
+        y_true, y_pred, average=None, zero_division=undefined_precision
     )
 
     expected_result = MulticlassPrecisionResult(
@@ -94,5 +99,7 @@ def test_compute_multiclass_precision_against_sklearn(
     )
 
     # 2. Assert full structural and mathematical equality
-    result = compute_multiclass_precision(y_true=y_true, y_pred=y_pred)
-    assert result.allclose(expected_result)
+    result = multiclass_precision(
+        y_true=y_true, y_pred=y_pred, undefined_precision=undefined_precision
+    )
+    assert result.allclose(expected_result, equal_nan=True)
