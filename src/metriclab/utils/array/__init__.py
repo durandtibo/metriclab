@@ -8,6 +8,7 @@ __all__ = [
     "check_nan_policy",
     "contains_nan",
     "contains_value",
+    "count_unique_non_missing",
     "equal_to",
     "is_nan",
     "multi_contains_value",
@@ -35,3 +36,4 @@ from metriclab.utils.array.nan import (
 from metriclab.utils.array.preprocessing import preprocess_1d
 from metriclab.utils.array.search import contains_value, multi_contains_value
 from metriclab.utils.array.shape import validate_array_ndim, validate_same_shape
+from metriclab.utils.array.unique import count_unique_non_missing
