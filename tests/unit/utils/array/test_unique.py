@@ -4,10 +4,13 @@ from typing import Any
 
 import numpy as np
 import pytest
+from coola.equality import objects_are_equal
 
 from metriclab.utils.array import (
     count_unique_non_missing,
     multi_count_unique_non_missing,
+    multi_unique,
+    unique,
 )
 
 ############################################
@@ -692,3 +695,552 @@ def test_multi_count_unique_non_missing_returns_int_with_missing_values() -> Non
         ),
         int,
     )
+
+
+##################################################
+#             Tests for unique                   #
+##################################################
+
+
+# --- empty array ---
+
+
+def test_unique_empty() -> None:
+    arr = np.array([])
+    assert objects_are_equal(unique(arr), arr)
+
+
+# --- single element ---
+
+
+@pytest.mark.parametrize(
+    "arr",
+    [
+        pytest.param(np.array([1]), id="int"),
+        pytest.param(np.array([1.0]), id="float"),
+        pytest.param(np.array([float("nan")]), id="float-nan"),
+        pytest.param(np.array(["cat"]), id="string"),
+        pytest.param(np.array([None], dtype=object), id="object-none"),
+        pytest.param(np.array([float("nan")], dtype=object), id="object-nan"),
+    ],
+)
+def test_unique_single_element(arr: np.ndarray) -> None:
+    assert objects_are_equal(unique(arr).tolist(), arr.tolist(), equal_nan=True)
+
+
+# --- numeric arrays: no duplicates ---
+
+
+@pytest.mark.parametrize(
+    "arr",
+    [
+        pytest.param(np.array([1, 2, 3]), id="int"),
+        pytest.param(np.array([1.0, 2.0, 3.0]), id="float"),
+        pytest.param(np.array([1.0, 2.0, 3.0], dtype=np.float32), id="float32"),
+    ],
+)
+def test_unique_numeric_no_duplicates(arr: np.ndarray) -> None:
+    assert objects_are_equal(unique(arr), arr)
+
+
+# --- numeric arrays: duplicates removed and result sorted ---
+
+
+@pytest.mark.parametrize(
+    ("arr", "expected"),
+    [
+        pytest.param(
+            np.array([3, 1, 2, 1, 3]),
+            np.array([1, 2, 3]),
+            id="int",
+        ),
+        pytest.param(
+            np.array([3.0, 1.0, 2.0, 1.0, 3.0]),
+            np.array([1.0, 2.0, 3.0]),
+            id="float",
+        ),
+        pytest.param(
+            np.array([True, False, True]),
+            np.array([False, True]),
+            id="bool",
+        ),
+    ],
+)
+def test_unique_numeric_duplicates(arr: np.ndarray, expected: np.ndarray) -> None:
+    assert objects_are_equal(unique(arr), expected)
+
+
+# --- numeric arrays: NaN deduplicated ---
+
+
+@pytest.mark.parametrize(
+    ("arr", "expected"),
+    [
+        pytest.param(
+            np.array([1.0, float("nan"), 2.0, float("nan")]),
+            np.array([1.0, 2.0, float("nan")]),
+            id="float-nan-two",
+        ),
+        pytest.param(
+            np.array([float("nan"), float("nan"), float("nan")]),
+            np.array([float("nan")]),
+            id="float-nan-only",
+        ),
+        pytest.param(
+            np.array([float("nan"), 1.0, float("nan")], dtype=np.float32),
+            np.array([1.0, float("nan")], dtype=np.float32),
+            id="float32-nan",
+        ),
+    ],
+)
+def test_unique_numeric_nan(arr: np.ndarray, expected: np.ndarray) -> None:
+    assert objects_are_equal(unique(arr), expected, equal_nan=True)
+
+
+# --- string arrays ---
+
+
+@pytest.mark.parametrize(
+    ("arr", "expected"),
+    [
+        pytest.param(
+            np.array(["cat", "dog", "bear"]),
+            np.array(["bear", "cat", "dog"]),
+            id="no-duplicates-sorted",
+        ),
+        pytest.param(
+            np.array(["cat", "dog", "cat", "bear"]),
+            np.array(["bear", "cat", "dog"]),
+            id="duplicates",
+        ),
+        pytest.param(
+            np.array(["cat"]),
+            np.array(["cat"]),
+            id="single",
+        ),
+    ],
+)
+def test_unique_string(arr: np.ndarray, expected: np.ndarray) -> None:
+    assert objects_are_equal(unique(arr), expected)
+
+
+# --- object arrays: homogeneous types, result is sorted ---
+
+
+@pytest.mark.parametrize(
+    ("arr", "expected"),
+    [
+        pytest.param(
+            np.array(["dog", "cat", "bear", "cat"], dtype=object),
+            np.array(["bear", "cat", "dog"], dtype=object),
+            id="object-string-sorted",
+        ),
+        pytest.param(
+            np.array([3, 1, 2, 1], dtype=object),
+            np.array([1, 2, 3], dtype=object),
+            id="object-int-sorted",
+        ),
+        pytest.param(
+            np.array([3.0, 1.0, 2.0, 1.0], dtype=object),
+            np.array([1.0, 2.0, 3.0], dtype=object),
+            id="object-float-sorted",
+        ),
+    ],
+)
+def test_unique_object_homogeneous(arr: np.ndarray, expected: np.ndarray) -> None:
+    assert objects_are_equal(unique(arr), expected)
+
+
+# --- object arrays: NaN deduplicated and placed at the end ---
+
+
+@pytest.mark.parametrize(
+    ("arr", "expected"),
+    [
+        pytest.param(
+            np.array([float("nan"), float("nan")], dtype=object),
+            np.array([float("nan")], dtype=object),
+            id="nan-only",
+        ),
+        pytest.param(
+            np.array([1.0, float("nan"), 2.0, float("nan")], dtype=object),
+            np.array([1.0, 2.0, float("nan")], dtype=object),
+            id="nan-middle-sorted",
+        ),
+        pytest.param(
+            np.array([float("nan"), 1.0, float("nan"), 2.0], dtype=object),
+            np.array([1.0, 2.0, float("nan")], dtype=object),
+            id="nan-start-sorted",
+        ),
+    ],
+)
+def test_unique_object_nan(arr: np.ndarray, expected: np.ndarray) -> None:
+    assert objects_are_equal(unique(arr).tolist(), expected.tolist(), equal_nan=True)
+
+
+# --- object arrays: None deduplicated ---
+
+
+@pytest.mark.parametrize(
+    ("arr", "expected"),
+    [
+        pytest.param(
+            np.array([None, None], dtype=object),
+            np.array([None], dtype=object),
+            id="none-only",
+        ),
+        pytest.param(
+            # None is not comparable with int in Python 3, so
+            # insertion order is preserved on sort failure.
+            np.array([1, None, 2, None], dtype=object),
+            np.array([1, None, 2], dtype=object),
+            id="none-int-insertion-order",
+        ),
+        pytest.param(
+            np.array([None, 1, None, 2], dtype=object),
+            np.array([None, 1, 2], dtype=object),
+            id="none-start-insertion-order",
+        ),
+    ],
+)
+def test_unique_object_none(arr: np.ndarray, expected: np.ndarray) -> None:
+    assert objects_are_equal(unique(arr), expected)
+
+
+# --- object arrays: mixed types fall back to insertion order ---
+
+
+@pytest.mark.parametrize(
+    ("arr", "expected"),
+    [
+        pytest.param(
+            # str and int are not comparable in Python 3: insertion order.
+            np.array(["cat", 1, "cat", 1], dtype=object),
+            np.array(["cat", 1], dtype=object),
+            id="string-int-insertion-order",
+        ),
+        pytest.param(
+            np.array(["cat", 1, float("nan"), "cat", 1, float("nan")], dtype=object),
+            np.array(["cat", 1, float("nan")], dtype=object),
+            id="string-int-nan-insertion-order",
+        ),
+        pytest.param(
+            np.array([None, "cat", 1, None, "cat"], dtype=object),
+            np.array([None, "cat", 1], dtype=object),
+            id="none-string-int-insertion-order",
+        ),
+        pytest.param(
+            np.array([None, float("nan"), 1, None, float("nan")], dtype=object),
+            np.array([None, 1, float("nan")], dtype=object),
+            id="none-nan-int-insertion-order",
+        ),
+        pytest.param(
+            np.array([None, float("nan"), "cat", 1, None, float("nan"), "cat", 1], dtype=object),
+            np.array([None, "cat", 1, float("nan")], dtype=object),
+            id="none-nan-string-int-insertion-order",
+        ),
+    ],
+)
+def test_unique_object_mixed(arr: np.ndarray, expected: np.ndarray) -> None:
+    assert objects_are_equal(unique(arr).tolist(), expected.tolist(), equal_nan=True)
+
+
+# --- object arrays: sorted when all elements are comparable ---
+
+
+@pytest.mark.parametrize(
+    ("arr", "expected"),
+    [
+        pytest.param(
+            np.array(["dog", "cat", "bear", "cat", "dog"], dtype=object),
+            np.array(["bear", "cat", "dog"], dtype=object),
+            id="object-string-sorted",
+        ),
+        pytest.param(
+            np.array([3, 1, 2, 3], dtype=object),
+            np.array([1, 2, 3], dtype=object),
+            id="object-int-sorted",
+        ),
+    ],
+)
+def test_unique_object_sorted_when_comparable(arr: np.ndarray, expected: np.ndarray) -> None:
+    assert objects_are_equal(unique(arr), expected)
+
+
+# --- dtype preserved ---
+
+
+@pytest.mark.parametrize(
+    ("arr", "expected_dtype"),
+    [
+        pytest.param(np.array([1, 2, 1]), np.intp, id="int"),
+        pytest.param(np.array([1.0, 2.0, 1.0]), np.float64, id="float64"),
+        pytest.param(np.array([1.0, 2.0, 1.0], dtype=np.float32), np.float32, id="float32"),
+        pytest.param(np.array([1.0, 2.0, 1.0], dtype=object), object, id="object-float"),
+        pytest.param(np.array(["cat", "dog", "cat"], dtype=object), object, id="object-string"),
+        pytest.param(np.array([None, 1, None], dtype=object), object, id="object-none"),
+    ],
+)
+def test_unique_preserves_dtype(arr: np.ndarray, expected_dtype: np.dtype) -> None:
+    assert unique(arr).dtype == expected_dtype
+
+
+# --- non-1D raises ---
+
+
+@pytest.mark.parametrize(
+    "arr",
+    [
+        pytest.param(np.array([[1, 2], [3, 4]]), id="2d"),
+        pytest.param(np.ones((2, 3, 4)), id="3d"),
+    ],
+)
+def test_unique_non_1d_raises(arr: np.ndarray) -> None:
+    with pytest.raises(ValueError, match=r"input: expected 1D array, got shape"):
+        unique(arr)
+
+
+def test_unique_non_1d_error_includes_shape() -> None:
+    arr = np.ones((3, 4))
+    with pytest.raises(ValueError, match=r"input: expected 1D array, got shape"):
+        unique(arr)
+
+
+##################################################
+#           Tests for multi_unique               #
+##################################################
+
+
+# --- empty input ---
+
+
+def test_multi_unique_empty_list() -> None:
+    assert objects_are_equal(multi_unique([]), np.array([], dtype=np.float64))
+
+
+def test_multi_unique_single_empty_array() -> None:
+    assert objects_are_equal(multi_unique([np.array([])]), np.array([], dtype=np.float64))
+
+
+def test_multi_unique_multiple_empty_arrays() -> None:
+    assert objects_are_equal(
+        multi_unique([np.array([]), np.array([]), np.array([])]),
+        np.array([], dtype=np.float64),
+    )
+
+
+# --- single array ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "expected"),
+    [
+        pytest.param(
+            [np.array([1, 2, 3])],
+            np.array([1, 2, 3]),
+            id="int-no-duplicates",
+        ),
+        pytest.param(
+            [np.array([3, 1, 2, 1, 3])],
+            np.array([1, 2, 3]),
+            id="int-duplicates",
+        ),
+        pytest.param(
+            [np.array([1.0, 2.0, 3.0])],
+            np.array([1.0, 2.0, 3.0]),
+            id="float-no-duplicates",
+        ),
+        pytest.param(
+            [np.array([3.0, 1.0, 2.0, 1.0])],
+            np.array([1.0, 2.0, 3.0]),
+            id="float-duplicates",
+        ),
+        pytest.param(
+            [np.array(["bear", "cat", "dog"])],
+            np.array(["bear", "cat", "dog"]),
+            id="string-no-duplicates",
+        ),
+        pytest.param(
+            [np.array(["cat", "dog", "cat"])],
+            np.array(["cat", "dog"]),
+            id="string-duplicates",
+        ),
+    ],
+)
+def test_multi_unique_single_array(arrays: list[np.ndarray], expected: np.ndarray) -> None:
+    assert objects_are_equal(multi_unique(arrays), expected, show_difference=True)
+
+
+# --- multiple arrays ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "expected"),
+    [
+        pytest.param(
+            [np.array([1, 3, 4, 3]), np.array([3, 1, 2, 1]), np.array([6, 3, 4, 2])],
+            np.array([1, 2, 3, 4, 6]),
+            id="int-three-arrays",
+        ),
+        pytest.param(
+            [np.array([1.0, 3.0]), np.array([2.0, 3.0])],
+            np.array([1.0, 2.0, 3.0]),
+            id="float-two-arrays",
+        ),
+        pytest.param(
+            [np.array(["cat", "dog"]), np.array(["dog", "bear"])],
+            np.array(["bear", "cat", "dog"]),
+            id="string-two-arrays",
+        ),
+        pytest.param(
+            [np.array(["cat", "dog"], dtype=object), np.array(["dog", "bear"], dtype=object)],
+            np.array(["bear", "cat", "dog"], dtype=object),
+            id="object-string-two-arrays",
+        ),
+        pytest.param(
+            [np.array([1, 2]), np.array([2, 3]), np.array([3, 4]), np.array([4, 5])],
+            np.array([1, 2, 3, 4, 5]),
+            id="int-four-arrays",
+        ),
+    ],
+)
+def test_multi_unique_multiple_arrays(arrays: list[np.ndarray], expected: np.ndarray) -> None:
+    assert objects_are_equal(multi_unique(arrays), expected)
+
+
+# --- NaN handling ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "expected"),
+    [
+        pytest.param(
+            [np.array([1.0, float("nan")]), np.array([2.0, float("nan")])],
+            np.array([1.0, 2.0, float("nan")]),
+            id="float-nan-deduplicated",
+        ),
+        pytest.param(
+            [np.array([float("nan")])],
+            np.array([float("nan")]),
+            id="float-nan-only-single",
+        ),
+        pytest.param(
+            [np.array([float("nan")]), np.array([float("nan")]), np.array([float("nan")])],
+            np.array([float("nan")]),
+            id="float-nan-only-three-arrays",
+        ),
+        pytest.param(
+            [
+                np.array([float("nan"), 1.0], dtype=object),
+                np.array([float("nan"), 2.0], dtype=object),
+            ],
+            np.array([1.0, 2.0, float("nan")], dtype=object),
+            id="object-nan-deduplicated",
+        ),
+    ],
+)
+def test_multi_unique_nan(arrays: list[np.ndarray], expected: np.ndarray) -> None:
+    assert objects_are_equal(
+        multi_unique(arrays).tolist(), expected.tolist(), equal_nan=True, show_difference=True
+    )
+
+
+# --- missing_values filtering ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "missing_values", "expected"),
+    [
+        pytest.param(
+            [np.array([1.0, 2.0, float("nan")]), np.array([2.0, 3.0])],
+            float("nan"),
+            np.array([1.0, 2.0, 3.0]),
+            id="float-nan-excluded",
+        ),
+        pytest.param(
+            [np.array([1.0, -1.0, 2.0]), np.array([2.0, -1.0, 3.0])],
+            -1.0,
+            np.array([1.0, 2.0, 3.0]),
+            id="float-sentinel-excluded",
+        ),
+        pytest.param(
+            [np.array([1, -1, 2]), np.array([2, -1, 3])],
+            -1,
+            np.array([1, 2, 3]),
+            id="int-sentinel-excluded",
+        ),
+        pytest.param(
+            [np.array(["cat", "N/A", "dog"]), np.array(["bear", "N/A"])],
+            "N/A",
+            np.array(["bear", "cat", "dog"]),
+            id="string-sentinel-excluded",
+        ),
+        pytest.param(
+            [
+                np.array(["cat", float("nan")], dtype=object),
+                np.array(["dog", float("nan")], dtype=object),
+            ],
+            float("nan"),
+            np.array(["cat", "dog"], dtype=object),
+            id="object-mixed-nan-excluded",
+        ),
+    ],
+)
+def test_multi_unique_missing_values(
+    arrays: list[np.ndarray], missing_values: object, expected: np.ndarray
+) -> None:
+    assert objects_are_equal(multi_unique(arrays, missing_values=missing_values), expected)
+
+
+# --- all values are missing_values: empty array returned ---
+
+
+@pytest.mark.parametrize(
+    ("arrays", "missing_values"),
+    [
+        pytest.param([np.array([float("nan")])], float("nan"), id="float-nan-single"),
+        pytest.param(
+            [np.array([float("nan")]), np.array([float("nan")])],
+            float("nan"),
+            id="float-nan-two-arrays",
+        ),
+        pytest.param([np.array([-1, -1, -1])], -1, id="int-sentinel"),
+        pytest.param([np.array(["N/A", "N/A"])], "N/A", id="string-sentinel"),
+    ],
+)
+def test_multi_unique_all_missing(arrays: list[np.ndarray], missing_values: object) -> None:
+    result = multi_unique(arrays, missing_values=missing_values)
+    assert result.size == 0
+
+
+# --- mixed empty and non-empty arrays ---
+
+
+def test_multi_unique_mixed_empty_and_non_empty() -> None:
+    arrays = [np.array([]), np.array([1.0, 2.0]), np.array([]), np.array([2.0, 3.0])]
+    assert objects_are_equal(multi_unique(arrays), np.array([1.0, 2.0, 3.0]))
+
+
+# --- result is always sorted ---
+
+
+def test_multi_unique_result_is_sorted() -> None:
+    arrays = [np.array([5, 3, 1]), np.array([4, 2, 6])]
+    result = multi_unique(arrays)
+    assert objects_are_equal(result, np.array([1, 2, 3, 4, 5, 6]))
+
+
+# --- disjoint arrays ---
+
+
+def test_multi_unique_disjoint_arrays() -> None:
+    arrays = [np.array([1, 2]), np.array([3, 4]), np.array([5, 6])]
+    assert objects_are_equal(multi_unique(arrays), np.array([1, 2, 3, 4, 5, 6]))
+
+
+# --- identical arrays ---
+
+
+def test_multi_unique_identical_arrays() -> None:
+    arrays = [np.array([1, 2, 3]), np.array([1, 2, 3]), np.array([1, 2, 3])]
+    assert objects_are_equal(multi_unique(arrays), np.array([1, 2, 3]))
