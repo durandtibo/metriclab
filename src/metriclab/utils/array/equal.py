@@ -4,12 +4,12 @@ from __future__ import annotations
 
 __all__ = ["equal_to"]
 
-import math
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
 from metriclab.utils.array.nan import is_nan
+from metriclab.utils.nan import is_nan as is_nan_value
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -44,7 +44,7 @@ def equal_to(arr: np.ndarray, value: Any) -> np.ndarray:
 
         ```
     """
-    if isinstance(value, float) and math.isnan(value):
+    if is_nan_value(value):
         return is_nan(arr)
 
     if value is None:

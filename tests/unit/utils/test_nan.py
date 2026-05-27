@@ -33,4 +33,4 @@ from metriclab.utils.nan import is_nan
 )
 def test_is_nan(value: object, expected: bool) -> None:
     """Test is_nan for valid and invalid inputs."""
-    assert is_nan(value) is expected
+    assert is_nan(value) == expected

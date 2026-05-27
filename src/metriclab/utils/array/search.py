@@ -4,12 +4,12 @@ from __future__ import annotations
 
 __all__ = ["contains_value"]
 
-import math
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
 from metriclab.utils.array.nan import contains_nan
+from metriclab.utils.nan import is_nan
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -58,7 +58,7 @@ def contains_value(arr: ArrayLike, value: Any) -> bool:
     if arr.size == 0:
         return False
 
-    if isinstance(value, float) and math.isnan(value):
+    if is_nan(value):
         return contains_nan(arr)
 
     if arr.dtype == object:
