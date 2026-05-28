@@ -841,7 +841,7 @@ def test_multi_equal_to_output_length_matches_input_length() -> None:
 
 
 def test_multi_equal_to_empty_input_raises() -> None:
-    with pytest.raises(ValueError, match="'arrays' cannot be empty"):
+    with pytest.raises(ValueError, match=r"'arrays' cannot be empty"):
         multi_equal_to([], value=2)
 
 

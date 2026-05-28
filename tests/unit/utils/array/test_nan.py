@@ -37,12 +37,12 @@ def test_validate_nan_policy_valid(nan_policy: str) -> None:
     ],
 )
 def test_validate_nan_policy_invalid_raises(nan_policy: str) -> None:
-    with pytest.raises(ValueError, match="Incorrect 'nan_policy'"):
+    with pytest.raises(ValueError, match=r"Incorrect 'nan_policy'"):
         validate_nan_policy(nan_policy)
 
 
 def test_validate_nan_policy_error_message_contains_valid_values() -> None:
-    with pytest.raises(ValueError, match="'omit', 'propagate', 'raise'"):
+    with pytest.raises(ValueError, match=r"'omit', 'propagate', 'raise'"):
         validate_nan_policy("invalid")
 
 
@@ -182,12 +182,12 @@ def test_check_nan_policy_raise_no_nan_does_not_raise() -> None:
 
 
 def test_check_nan_policy_raise_with_nan_raises() -> None:
-    with pytest.raises(ValueError, match="input contains at least one NaN value"):
+    with pytest.raises(ValueError, match=r"input contains at least one NaN value"):
         check_nan_policy(np.array([1.0, float("nan"), 3.0]), nan_policy="raise")
 
 
 def test_check_nan_policy_raise_custom_name() -> None:
-    with pytest.raises(ValueError, match="my_array contains at least one NaN value"):
+    with pytest.raises(ValueError, match=r"my_array contains at least one NaN value"):
         check_nan_policy(
             np.array([1.0, float("nan"), 3.0]),
             nan_policy="raise",
@@ -199,7 +199,7 @@ def test_check_nan_policy_raise_custom_name() -> None:
 
 
 def test_check_nan_policy_invalid_raises() -> None:
-    with pytest.raises(ValueError, match="Incorrect 'nan_policy'"):
+    with pytest.raises(ValueError, match=r"Incorrect 'nan_policy'"):
         check_nan_policy(np.array([1, 2, 3]), nan_policy="invalid")
 
 
@@ -578,7 +578,7 @@ def test_multi_is_nan_2d_arrays() -> None:
 
 
 def test_multi_is_nan_empty_raises() -> None:
-    with pytest.raises(ValueError, match="'arrays' cannot be empty"):
+    with pytest.raises(ValueError, match=r"'arrays' cannot be empty"):
         multi_is_nan([])
 
 

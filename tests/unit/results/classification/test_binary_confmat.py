@@ -139,7 +139,7 @@ def test_compute_f_beta_score_nan_both() -> None:
 
 
 def test_compute_f_beta_score_negative_beta_raises() -> None:
-    with pytest.raises(ValueError, match="beta must be >= 0"):
+    with pytest.raises(ValueError, match=r"beta must be >= 0"):
         compute_f_beta_score(precision=0.75, recall=0.6, beta=-1.0)
 
 
@@ -251,7 +251,7 @@ def test_binary_confusion_matrix_result_from_confusion_matrix_frozen() -> None:
     m = BinaryConfusionMatrixResult.from_confusion_matrix(
         true_positives=3, true_negatives=4, false_positives=1, false_negatives=2
     )
-    with pytest.raises(FrozenInstanceError, match="cannot assign to field 'true_positives'"):
+    with pytest.raises(FrozenInstanceError, match=r"cannot assign to field 'true_positives'"):
         m.true_positives = 10
 
 
@@ -393,7 +393,7 @@ def test_binary_confusion_matrix_result_nan_does_not_raise() -> None:
 
 
 def test_binary_confusion_matrix_result_negative_beta_raises() -> None:
-    with pytest.raises(ValueError, match="beta values must be >= 0"):
+    with pytest.raises(ValueError, match=r"beta values must be >= 0"):
         BinaryConfusionMatrixResult.from_confusion_matrix(
             true_positives=3,
             true_negatives=4,
@@ -732,7 +732,7 @@ def test_binary_confusion_matrix_result_combine_wrong_type_raises() -> None:
     m = BinaryConfusionMatrixResult.from_confusion_matrix(
         true_positives=3, true_negatives=4, false_positives=1, false_negatives=2
     )
-    with pytest.raises(TypeError, match="Cannot combine"):
+    with pytest.raises(TypeError, match=r"Cannot combine"):
         m.combine("not a result")  # type: ignore[arg-type]
 
 

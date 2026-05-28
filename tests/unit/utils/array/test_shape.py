@@ -21,12 +21,12 @@ def test_validate_array_ndim_2(shape: tuple[int, ...]) -> None:
 
 
 def test_validate_array_ndim_incorrect() -> None:
-    with pytest.raises(ValueError, match="input: expected 3D array"):
+    with pytest.raises(ValueError, match=r"input: expected 3D array"):
         validate_array_ndim(np.ones((2, 3)), ndim=3)
 
 
 def test_validate_array_ndim_incorrect_custom_name() -> None:
-    with pytest.raises(ValueError, match="predictions: expected 4D array"):
+    with pytest.raises(ValueError, match=r"predictions: expected 4D array"):
         validate_array_ndim(np.ones((2, 3)), ndim=4, name="predictions")
 
 
@@ -44,7 +44,7 @@ def test_validate_same_shape_2_arrays_correct() -> None:
 
 
 def test_validate_same_shape_2_arrays_incorrect() -> None:
-    with pytest.raises(ValueError, match="arrays have different shapes"):
+    with pytest.raises(ValueError, match=r"arrays have different shapes"):
         validate_same_shape([np.array([1, 0, 0, 1, 1]), np.array([1, 0, 0, 1])])
 
 
@@ -55,7 +55,7 @@ def test_validate_same_shape_3_arrays_correct() -> None:
 
 
 def test_validate_same_shape_3_arrays_incorrect() -> None:
-    with pytest.raises(ValueError, match="arrays have different shapes"):
+    with pytest.raises(ValueError, match=r"arrays have different shapes"):
         validate_same_shape(
             [np.array([1, 0, 0, 1, 1]), np.array([1, 2, 3, 4]), np.array([6, 5, 4, 3, 2, 1])]
         )
