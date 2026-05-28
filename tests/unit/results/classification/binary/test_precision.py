@@ -457,18 +457,14 @@ def test_binary_precision_result_str() -> None:
             0,
             0,
             10,
-            BinaryPrecisionResult(
-                precision=float("nan"), num_predictions=10, num_positive_predictions=0
-            ),
+            BinaryPrecisionResult(precision=0.0, num_predictions=10, num_positive_predictions=0),
             id="no-positive-predictions",
         ),
         pytest.param(
             0,
             0,
             0,
-            BinaryPrecisionResult(
-                precision=float("nan"), num_predictions=0, num_positive_predictions=0
-            ),
+            BinaryPrecisionResult(precision=0.0, num_predictions=0, num_positive_predictions=0),
             id="no-predictions-at-all",
         ),
         pytest.param(
