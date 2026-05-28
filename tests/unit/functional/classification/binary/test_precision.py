@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 from typing import Any
 
 import numpy as np
@@ -24,49 +23,49 @@ from metriclab.results import BinaryPrecisionResult
         pytest.param(
             np.array([1, 0, 0, 1, 1]),
             np.array([1, 0, 0, 1, 1]),
-            BinaryPrecisionResult(precision=1.0, num_predictions=5),
+            BinaryPrecisionResult(precision=1.0, num_predictions=5, num_positive_predictions=3),
             id="all-correct",
         ),
         pytest.param(
             np.array([1, 0, 0, 1, 1]),
             np.array([0, 1, 1, 0, 0]),
-            BinaryPrecisionResult(precision=0.0, num_predictions=5),
+            BinaryPrecisionResult(precision=0.0, num_predictions=5, num_positive_predictions=2),
             id="all-incorrect",
         ),
         pytest.param(
             np.array([1, 0, 0, 1, 1]),
             np.array([1, 0, 1, 1, 1]),
-            BinaryPrecisionResult(precision=0.75, num_predictions=5),
+            BinaryPrecisionResult(precision=0.75, num_predictions=5, num_positive_predictions=4),
             id="partial",
         ),
         pytest.param(
             np.array([1, 0, 0, 1]),
             np.array([0, 0, 0, 0]),
-            BinaryPrecisionResult(precision=0.0, num_predictions=4),
+            BinaryPrecisionResult(precision=0.0, num_predictions=4, num_positive_predictions=0),
             id="no-positive-predictions-zero-division",
         ),
         pytest.param(
             np.array([0, 0, 0, 0]),
             np.array([0, 0, 0, 0]),
-            BinaryPrecisionResult(precision=0.0, num_predictions=4),
+            BinaryPrecisionResult(precision=0.0, num_predictions=4, num_positive_predictions=0),
             id="all-negative",
         ),
         pytest.param(
             np.array([1, 1, 1, 1]),
             np.array([1, 1, 1, 1]),
-            BinaryPrecisionResult(precision=1.0, num_predictions=4),
+            BinaryPrecisionResult(precision=1.0, num_predictions=4, num_positive_predictions=4),
             id="all-positive-all-correct",
         ),
         pytest.param(
             np.array([1]),
             np.array([1]),
-            BinaryPrecisionResult(precision=1.0, num_predictions=1),
+            BinaryPrecisionResult(precision=1.0, num_predictions=1, num_positive_predictions=1),
             id="single-correct",
         ),
         pytest.param(
             np.array([1]),
             np.array([0]),
-            BinaryPrecisionResult(precision=0.0, num_predictions=1),
+            BinaryPrecisionResult(precision=0.0, num_predictions=1, num_positive_predictions=0),
             id="single-incorrect",
         ),
     ],
@@ -90,7 +89,7 @@ def test_binary_precision_basic(
 )
 def test_binary_precision_input_types(y_true: np.ndarray, y_pred: np.ndarray) -> None:
     assert binary_precision(y_true=y_true, y_pred=y_pred).allclose(
-        BinaryPrecisionResult(precision=1.0, num_predictions=4)
+        BinaryPrecisionResult(precision=1.0, num_predictions=4, num_positive_predictions=2)
     )
 
 
@@ -101,7 +100,7 @@ def test_binary_precision_pos_label_default() -> None:
     assert binary_precision(
         y_true=np.array([1, 0, 1, 0]),
         y_pred=np.array([1, 0, 1, 0]),
-    ).allclose(BinaryPrecisionResult(precision=1.0, num_predictions=4))
+    ).allclose(BinaryPrecisionResult(precision=1.0, num_predictions=4, num_positive_predictions=2))
 
 
 def test_binary_precision_pos_label_zero() -> None:
@@ -110,7 +109,7 @@ def test_binary_precision_pos_label_zero() -> None:
         y_true=np.array([1, 0, 1, 0]),
         y_pred=np.array([1, 0, 1, 0]),
         pos_label=0,
-    ).allclose(BinaryPrecisionResult(precision=1.0, num_predictions=4))
+    ).allclose(BinaryPrecisionResult(precision=1.0, num_predictions=4, num_positive_predictions=2))
 
 
 def test_binary_precision_pos_label_string() -> None:
@@ -118,7 +117,7 @@ def test_binary_precision_pos_label_string() -> None:
         y_true=["cat", "dog", "cat", "dog", "dog"],
         y_pred=["cat", "dog", "dog", "dog", "dog"],
         pos_label="dog",
-    ).allclose(BinaryPrecisionResult(precision=0.75, num_predictions=5))
+    ).allclose(BinaryPrecisionResult(precision=0.75, num_predictions=5, num_positive_predictions=4))
 
 
 def test_binary_precision_pos_label_affects_result() -> None:
@@ -184,8 +183,12 @@ def test_binary_precision_propagate_returns_nan(
         missing_policy="propagate",
         missing_values=missing_values,
     )
-    assert math.isnan(result.precision)
-    assert result.num_predictions == len(y_true)
+    assert result.equal(
+        BinaryPrecisionResult(
+            precision=float("nan"), num_predictions=len(y_true), num_positive_predictions=1
+        ),
+        equal_nan=True,
+    )
 
 
 def test_binary_precision_propagate_keeps_num_predictions() -> None:
@@ -195,8 +198,12 @@ def test_binary_precision_propagate_keeps_num_predictions() -> None:
         missing_policy="propagate",
         missing_values=float("nan"),
     )
-    assert result.num_predictions == 5
-    assert math.isnan(result.precision)
+    assert result.equal(
+        BinaryPrecisionResult(
+            precision=float("nan"), num_predictions=5, num_positive_predictions=3
+        ),
+        equal_nan=True,
+    )
 
 
 def test_binary_precision_propagate_missing_values_not_set() -> None:
@@ -205,7 +212,9 @@ def test_binary_precision_propagate_missing_values_not_set() -> None:
         y_pred=np.array([1.0, 0.0, 0.0, 1.0]),
         missing_policy="propagate",
     )
-    assert result.allclose(BinaryPrecisionResult(precision=1.0, num_predictions=4))
+    assert result.allclose(
+        BinaryPrecisionResult(precision=1.0, num_predictions=4, num_positive_predictions=2)
+    )
 
 
 def test_binary_precision_propagate_no_missing_computes_correctly() -> None:
@@ -215,7 +224,9 @@ def test_binary_precision_propagate_no_missing_computes_correctly() -> None:
         missing_policy="propagate",
         missing_values=float("nan"),
     )
-    assert result.allclose(BinaryPrecisionResult(precision=1.0, num_predictions=4))
+    assert result.allclose(
+        BinaryPrecisionResult(precision=1.0, num_predictions=4, num_positive_predictions=2)
+    )
 
 
 # --- missing_policy='omit' ---
@@ -228,35 +239,35 @@ def test_binary_precision_propagate_no_missing_computes_correctly() -> None:
             np.array([1.0, float("nan"), 0.0, 1.0]),
             np.array([1.0, 0.0, 0.0, 1.0]),
             float("nan"),
-            BinaryPrecisionResult(precision=1.0, num_predictions=3),
+            BinaryPrecisionResult(precision=1.0, num_predictions=3, num_positive_predictions=2),
             id="nan-in-y_true",
         ),
         pytest.param(
             np.array([1.0, 0.0, 0.0, 1.0]),
             np.array([1.0, float("nan"), 0.0, 1.0]),
             float("nan"),
-            BinaryPrecisionResult(precision=1.0, num_predictions=3),
+            BinaryPrecisionResult(precision=1.0, num_predictions=3, num_positive_predictions=2),
             id="nan-in-y_pred",
         ),
         pytest.param(
             np.array([1.0, float("nan"), 0.0, 1.0]),
             np.array([1.0, float("nan"), 0.0, 1.0]),
             float("nan"),
-            BinaryPrecisionResult(precision=1.0, num_predictions=3),
+            BinaryPrecisionResult(precision=1.0, num_predictions=3, num_positive_predictions=2),
             id="nan-in-both",
         ),
         pytest.param(
             np.array([1.0, float("inf"), 0.0, 1.0]),
             np.array([1.0, 0.0, 0.0, 1.0]),
             float("inf"),
-            BinaryPrecisionResult(precision=1.0, num_predictions=3),
+            BinaryPrecisionResult(precision=1.0, num_predictions=3, num_positive_predictions=2),
             id="inf-in-y_true",
         ),
         pytest.param(
             np.array([1, 99, 0, 1]),
             np.array([1, 0, 0, 1]),
             99,
-            BinaryPrecisionResult(precision=1.0, num_predictions=3),
+            BinaryPrecisionResult(precision=1.0, num_predictions=3, num_positive_predictions=2),
             id="int-sentinel",
         ),
     ],
@@ -281,7 +292,9 @@ def test_binary_precision_omit_all_missing_returns_empty() -> None:
         raise_empty=False,
     )
     assert result.allclose(
-        BinaryPrecisionResult(precision=float("nan"), num_predictions=0),
+        BinaryPrecisionResult(
+            precision=float("nan"), num_predictions=0, num_positive_predictions=0
+        ),
         equal_nan=True,
     )
 
@@ -337,7 +350,9 @@ def test_binary_precision_raise_no_missing_computes_correctly() -> None:
         missing_policy="raise",
         missing_values=float("nan"),
     )
-    assert result.allclose(BinaryPrecisionResult(precision=1.0, num_predictions=4))
+    assert result.allclose(
+        BinaryPrecisionResult(precision=1.0, num_predictions=4, num_positive_predictions=2)
+    )
 
 
 # --- raise_empty ---
@@ -364,7 +379,9 @@ def test_binary_precision_raise_empty_false_returns_result() -> None:
         raise_empty=False,
     )
     assert result.allclose(
-        BinaryPrecisionResult(precision=float("nan"), num_predictions=0),
+        BinaryPrecisionResult(
+            precision=float("nan"), num_predictions=0, num_positive_predictions=0
+        ),
         equal_nan=True,
     )
 
@@ -391,7 +408,9 @@ def test_binary_precision_raise_empty_after_omit_false_returns_result() -> None:
         raise_empty=False,
     )
     assert result.allclose(
-        BinaryPrecisionResult(precision=float("nan"), num_predictions=0),
+        BinaryPrecisionResult(
+            precision=float("nan"), num_predictions=0, num_positive_predictions=0
+        ),
         equal_nan=True,
     )
 
@@ -465,7 +484,9 @@ def test_binary_precision_large_arrays() -> None:
     y_true = np.ones(n, dtype=int)
     y_pred = np.ones(n, dtype=int)
     result = binary_precision(y_true=y_true, y_pred=y_pred)
-    assert result.allclose(BinaryPrecisionResult(precision=1.0, num_predictions=n))
+    assert result.allclose(
+        BinaryPrecisionResult(precision=1.0, num_predictions=n, num_positive_predictions=n)
+    )
 
 
 def test_binary_precision_returns_float_precision() -> None:
