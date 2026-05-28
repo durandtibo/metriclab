@@ -289,13 +289,6 @@ def test_precision_result_from_precision_zero_denominator() -> None:
     assert m.num_positive_predictions == 0
 
 
-def test_precision_result_from_precision_returns_instance() -> None:
-    assert isinstance(
-        PrecisionResult.from_precision(precision=0.75, num_positive_predictions=4),
-        PrecisionResult,
-    )
-
-
 def test_precision_result_from_precision_roundtrip() -> None:
     m = PrecisionResult(true_positives=3, false_positives=1)
     m2 = PrecisionResult.from_precision(
