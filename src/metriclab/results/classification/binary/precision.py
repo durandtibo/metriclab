@@ -55,7 +55,7 @@ class BinaryPrecisionResult(BaseResult):
 
     precision: float
     num_predictions: int
-    num_positive_predictions: int | float = 0
+    num_positive_predictions: int | float
 
     def __post_init__(self) -> None:
         if self.num_predictions < 0:

@@ -14,7 +14,12 @@ from sklearn.metrics import precision_score
 
 from metriclab.exceptions import EmptyMetricError
 from metriclab.results import BinaryPrecisionResult
-from metriclab.utils.array import multi_contains_value, preprocess_1d, to_numpy_1d
+from metriclab.utils.array import (
+    count_values,
+    multi_contains_value,
+    preprocess_1d,
+    to_numpy_1d,
+)
 from metriclab.utils.sentinel import NOT_SET
 
 if TYPE_CHECKING:
@@ -74,24 +79,24 @@ def binary_precision(
         ...     y_true=np.array([1, 0, 0, 1, 1]),
         ...     y_pred=np.array([1, 0, 0, 1, 1]),
         ... )
-        BinaryPrecisionResult(precision=1.0, num_predictions=5)
+        BinaryPrecisionResult(precision=1.0, num_predictions=5, num_positive_predictions=3)
         >>> # with lists
         >>> binary_precision(y_true=[1, 0, 0, 1, 1], y_pred=[1, 0, 1, 1, 1])
-        BinaryPrecisionResult(precision=0.75, num_predictions=5)
+        BinaryPrecisionResult(precision=0.75, num_predictions=5, num_positive_predictions=4)
         >>> # with string labels
         >>> binary_precision(
         ...     y_true=["cat", "dog", "cat", "dog", "dog"],
         ...     y_pred=["cat", "dog", "dog", "dog", "dog"],
         ...     pos_label="dog",
         ... )
-        BinaryPrecisionResult(precision=0.75, num_predictions=5)
+        BinaryPrecisionResult(precision=0.75, num_predictions=5, num_positive_predictions=4)
         >>> # with missing values and missing_policy='propagate' (default)
         >>> binary_precision(
         ...     y_true=np.array([1.0, 0.0, 0.0, 1.0, float("nan")]),
         ...     y_pred=np.array([1.0, 0.0, 0.0, 1.0, 1.0]),
         ...     missing_values=float("nan"),
         ... )
-        BinaryPrecisionResult(precision=nan, num_predictions=5)
+        BinaryPrecisionResult(precision=nan, num_predictions=5, num_positive_predictions=3)
         >>> # with missing values and missing_policy='omit'
         >>> binary_precision(
         ...     y_true=np.array([1.0, 0.0, 0.0, 1.0, float("nan")]),
@@ -99,10 +104,10 @@ def binary_precision(
         ...     missing_policy="omit",
         ...     missing_values=float("nan"),
         ... )
-        BinaryPrecisionResult(precision=1.0, num_predictions=4)
+        BinaryPrecisionResult(precision=1.0, num_predictions=4, num_positive_predictions=2)
         >>> # allow empty result instead of raising
         >>> binary_precision(y_true=[], y_pred=[], raise_empty=False)
-        BinaryPrecisionResult(precision=nan, num_predictions=0)
+        BinaryPrecisionResult(precision=nan, num_predictions=0, num_positive_predictions=0)
 
         ```
     """
@@ -121,9 +126,10 @@ def binary_precision(
             )
             raise EmptyMetricError(msg)
         return BinaryPrecisionResult(
-            precision=float("nan"),
-            num_predictions=0,
+            precision=float("nan"), num_predictions=0, num_positive_predictions=0
         )
+
+    num_positive_predictions = count_values(y_pred, value=pos_label)
 
     # When missing_policy is 'propagate', check for missing values in
     # the arrays. When 'omit', rows have already been dropped so this
@@ -138,6 +144,7 @@ def binary_precision(
         return BinaryPrecisionResult(
             precision=float("nan"),
             num_predictions=num_predictions,
+            num_positive_predictions=num_positive_predictions,
         )
 
     return BinaryPrecisionResult(
@@ -151,4 +158,5 @@ def binary_precision(
             )
         ),
         num_predictions=num_predictions,
+        num_positive_predictions=num_positive_predictions,
     )
