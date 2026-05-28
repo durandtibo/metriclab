@@ -9,7 +9,6 @@ import pytest
 from metriclab.exceptions import EmptyMetricError
 from metriclab.functional import multiclass_precision
 from metriclab.functional.classification.multiclass.precision import (
-    _resolve_fill_value,
     compute_multiclass_precision,
 )
 from metriclab.results import MulticlassPrecisionResult
@@ -82,7 +81,7 @@ def test_multiclass_precision_with_string_labels() -> None:
 
 def test_multiclass_precision_raise_empty_true() -> None:
     with pytest.raises(
-        EmptyMetricError, match="Cannot compute precision because 'y_true' and 'y_pred' are empty"
+        EmptyMetricError, match=r"Cannot compute precision because 'y_true' and 'y_pred' are empty"
     ):
         multiclass_precision(y_true=[], y_pred=[])
 
@@ -145,7 +144,7 @@ def test_multiclass_precision_missing_omit_drops_rows() -> None:
 
 
 def test_multiclass_precision_missing_raise_raises() -> None:
-    with pytest.raises(ValueError, match="arrays contain at least one missing value"):
+    with pytest.raises(ValueError, match=r"arrays contain at least one missing value"):
         multiclass_precision(
             y_true=np.array([1.0, float("nan")]),
             y_pred=np.array([1.0, 1.0]),
@@ -177,7 +176,7 @@ def test_multiclass_precision_no_missing_values_set_ignores_policy() -> None:
 
 
 def test_multiclass_precision_undefined_policy_warn_forwarded() -> None:
-    with pytest.warns(UserWarning, match="Precision is undefined"):
+    with pytest.warns(UserWarning, match=r"The metric is undefined for 1 element\(s\)"):
         result = multiclass_precision(
             y_true=[0, 0, 1, 2],
             y_pred=[0, 0, 1, 1],
@@ -233,7 +232,7 @@ def test_multiclass_precision_undefined_policy_nan_propagates() -> None:
 
 
 def test_multiclass_precision_invalid_undefined_policy_raises() -> None:
-    with pytest.raises(ValueError, match="Invalid 'undefined_policy' value"):
+    with pytest.raises(ValueError, match=r"Invalid 'undefined_policy' value"):
         multiclass_precision(
             y_true=[0, 1],
             y_pred=[0, 1],
@@ -246,7 +245,7 @@ def test_multiclass_precision_invalid_undefined_policy_raises() -> None:
 
 def test_multiclass_precision_validates_undefined_policy_before_preprocessing() -> None:
     # Even with valid arrays, an invalid undefined_policy should raise immediately.
-    with pytest.raises(ValueError, match="Invalid 'undefined_policy' value"):
+    with pytest.raises(ValueError, match=r"Invalid 'undefined_policy' value"):
         multiclass_precision(
             y_true=[0, 1, 2],
             y_pred=[0, 1, 2],
@@ -344,7 +343,7 @@ def test_compute_multiclass_precision_basic(
 
 def test_compute_multiclass_precision_undefined_warn_emits_warning() -> None:
     # Class 1 is never predicted, so precision is undefined for it.
-    with pytest.warns(UserWarning, match="Precision is undefined"):
+    with pytest.warns(UserWarning, match=r"The metric is undefined for 1 element\(s\)"):
         result = compute_multiclass_precision(
             y_true=np.array([0, 0, 1, 1]),
             y_pred=np.array([0, 0, 0, 0]),
@@ -489,7 +488,7 @@ def test_compute_multiclass_precision_no_undefined_no_warning() -> None:
     ],
 )
 def test_compute_multiclass_precision_invalid_undefined_policy(bad_value: object) -> None:
-    with pytest.raises(ValueError, match="Invalid 'undefined_policy' value"):
+    with pytest.raises(ValueError, match=r"Invalid 'undefined_policy' value"):
         compute_multiclass_precision(
             y_true=np.array([0, 1]),
             y_pred=np.array([0, 1]),
@@ -568,7 +567,7 @@ def test_compute_multiclass_precision_string_labels() -> None:
     # cherry: TP=1, FP=1 -> prec=0.5, support=1
     y_true = np.array(["apple", "banana", "apple", "cherry"])
     y_pred = np.array(["apple", "cherry", "apple", "cherry"])
-    with pytest.warns(UserWarning, match="banana"):
+    with pytest.warns(UserWarning, match=r"The metric is undefined for 1 element\(s\)"):
         result = compute_multiclass_precision(y_true=y_true, y_pred=y_pred)
     assert result.allclose(
         MulticlassPrecisionResult(
@@ -598,99 +597,3 @@ def test_compute_multiclass_precision_single_class() -> None:
             num_predictions=3,
         )
     )
-
-
-##################################################
-#        Tests for _resolve_fill_value           #
-##################################################
-
-
-def _make_mask(*flags: bool) -> np.ndarray:
-    return np.array(flags, dtype=bool)
-
-
-def _make_labels(*values: int) -> np.ndarray:
-    return np.array(values)
-
-
-def test_resolve_fill_value_no_undefined_returns_zero() -> None:
-    # No undefined classes: fill is irrelevant, should return 0.0 cheaply.
-    fill = _resolve_fill_value(
-        undefined_mask=_make_mask(False, False),
-        labels=_make_labels(0, 1),
-        undefined_policy="warn",
-    )
-    assert fill == 0.0
-
-
-def test_resolve_fill_value_nan_string() -> None:
-    fill = _resolve_fill_value(
-        undefined_mask=_make_mask(True, False),
-        labels=_make_labels(0, 1),
-        undefined_policy="nan",
-    )
-    assert fill != fill  # NaN identity check: NaN != NaN
-
-
-def test_resolve_fill_value_warn_emits_warning_and_returns_zero() -> None:
-    with pytest.warns(UserWarning, match="Precision is undefined"):
-        fill = _resolve_fill_value(
-            undefined_mask=_make_mask(False, True),
-            labels=_make_labels(0, 1),
-            undefined_policy="warn",
-        )
-    assert fill == 0.0
-
-
-def test_resolve_fill_value_warn_lists_affected_labels() -> None:
-    with pytest.warns(UserWarning, match=r"\[2, 5\]"):
-        _resolve_fill_value(
-            undefined_mask=_make_mask(False, True, False, True),
-            labels=_make_labels(0, 2, 3, 5),
-            undefined_policy="warn",
-        )
-
-
-def test_resolve_fill_value_warn_counts_affected_classes() -> None:
-    with pytest.warns(UserWarning, match="2 class"):
-        _resolve_fill_value(
-            undefined_mask=_make_mask(True, True),
-            labels=_make_labels(0, 1),
-            undefined_policy="warn",
-        )
-
-
-def test_resolve_fill_value_float_zero() -> None:
-    fill = _resolve_fill_value(
-        undefined_mask=_make_mask(True),
-        labels=_make_labels(0),
-        undefined_policy=0.0,
-    )
-    assert fill == 0.0
-
-
-def test_resolve_fill_value_float_one() -> None:
-    fill = _resolve_fill_value(
-        undefined_mask=_make_mask(True),
-        labels=_make_labels(0),
-        undefined_policy=1.0,
-    )
-    assert fill == 1.0
-
-
-def test_resolve_fill_value_float_nan() -> None:
-    fill = _resolve_fill_value(
-        undefined_mask=_make_mask(True),
-        labels=_make_labels(0),
-        undefined_policy=float("nan"),
-    )
-    assert fill != fill  # NaN identity check: NaN != NaN
-
-
-def test_resolve_fill_value_arbitrary_float() -> None:
-    fill = _resolve_fill_value(
-        undefined_mask=_make_mask(True),
-        labels=_make_labels(0),
-        undefined_policy=0.5,
-    )
-    assert fill == 0.5
