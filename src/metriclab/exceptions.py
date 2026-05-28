@@ -20,6 +20,7 @@ class EmptyMetricError(Exception):
         ...     accuracy(y_true=[], y_pred=[])
         ... except EmptyMetricError as e:
         ...     print(type(e).__name__)
+        ...
         EmptyMetricError
 
         ```

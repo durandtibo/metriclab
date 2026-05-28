@@ -265,35 +265,28 @@ def test_precision_result_from_precision(
     m = PrecisionResult.from_precision(
         precision=precision, num_positive_predictions=num_positive_predictions
     )
-    assert m.true_positives == expected_tp
-    assert m.false_positives == expected_fp
+    assert m.equal(PrecisionResult(true_positives=expected_tp, false_positives=expected_fp))
     assert m.num_positive_predictions == num_positive_predictions
 
 
 def test_precision_result_from_precision_nan_precision() -> None:
     m = PrecisionResult.from_precision(precision=float("nan"), num_positive_predictions=4)
-    assert math.isnan(m.true_positives)
-    assert math.isnan(m.false_positives)
+    assert m.equal(
+        PrecisionResult(true_positives=float("nan"), false_positives=float("nan")), equal_nan=True
+    )
 
 
 def test_precision_result_from_precision_nan_num_positive_predictions() -> None:
     m = PrecisionResult.from_precision(precision=0.75, num_positive_predictions=float("nan"))
-    assert math.isnan(m.true_positives)
-    assert math.isnan(m.false_positives)
+    assert m.equal(
+        PrecisionResult(true_positives=float("nan"), false_positives=float("nan")), equal_nan=True
+    )
 
 
 def test_precision_result_from_precision_zero_denominator() -> None:
     m = PrecisionResult.from_precision(precision=0.0, num_positive_predictions=0)
-    assert m.true_positives == 0
-    assert m.false_positives == 0
+    assert m.equal(PrecisionResult(true_positives=0, false_positives=0))
     assert m.num_positive_predictions == 0
-
-
-def test_precision_result_from_precision_returns_instance() -> None:
-    assert isinstance(
-        PrecisionResult.from_precision(precision=0.75, num_positive_predictions=4),
-        PrecisionResult,
-    )
 
 
 def test_precision_result_from_precision_roundtrip() -> None:
