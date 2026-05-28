@@ -18,7 +18,7 @@ from coola.equality import objects_are_allclose, objects_are_equal
 
 from metriclab.results.base import BaseResult
 from metriclab.results.classification.accuracy import compute_accuracy
-from metriclab.results.classification.precision import compute_precision
+from metriclab.results.classification.binary.precision import compute_precision
 from metriclab.results.classification.recall import compute_recall
 from metriclab.utils.format import make_robust_bar
 

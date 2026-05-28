@@ -7,6 +7,7 @@ import pytest
 from coola.equality import objects_are_allclose
 
 from metriclab.results import BinaryPrecisionResult
+from metriclab.results.classification.binary.precision import compute_precision
 
 ############################################
 #     Tests for BinaryPrecisionResult      #
@@ -426,3 +427,142 @@ def test_binary_precision_result_str() -> None:
         str(BinaryPrecisionResult(precision=0.75, num_predictions=10, num_positive_predictions=4))
         == "BinaryPrecisionResult(precision=0.75, num_predictions=10, num_positive_predictions=4)"
     )
+
+
+@pytest.mark.parametrize(
+    ("true_positives", "false_positives", "num_predictions", "expected"),
+    [
+        pytest.param(
+            3,
+            1,
+            10,
+            BinaryPrecisionResult(precision=0.75, num_predictions=10, num_positive_predictions=4),
+            id="standard",
+        ),
+        pytest.param(
+            4,
+            0,
+            10,
+            BinaryPrecisionResult(precision=1.0, num_predictions=10, num_positive_predictions=4),
+            id="perfect-no-false-positives",
+        ),
+        pytest.param(
+            0,
+            4,
+            10,
+            BinaryPrecisionResult(precision=0.0, num_predictions=10, num_positive_predictions=4),
+            id="zero-true-positives",
+        ),
+        pytest.param(
+            0,
+            0,
+            10,
+            BinaryPrecisionResult(
+                precision=float("nan"), num_predictions=10, num_positive_predictions=0
+            ),
+            id="no-positive-predictions",
+        ),
+        pytest.param(
+            0,
+            0,
+            0,
+            BinaryPrecisionResult(
+                precision=float("nan"), num_predictions=0, num_positive_predictions=0
+            ),
+            id="no-predictions-at-all",
+        ),
+        pytest.param(
+            float("nan"),
+            1,
+            10,
+            BinaryPrecisionResult(
+                precision=float("nan"), num_predictions=10, num_positive_predictions=float("nan")
+            ),
+            id="tp-nan",
+        ),
+        pytest.param(
+            1,
+            float("nan"),
+            10,
+            BinaryPrecisionResult(
+                precision=float("nan"), num_predictions=10, num_positive_predictions=float("nan")
+            ),
+            id="fn-nan",
+        ),
+        pytest.param(
+            float("nan"),
+            float("nan"),
+            10,
+            BinaryPrecisionResult(
+                precision=float("nan"), num_predictions=10, num_positive_predictions=float("nan")
+            ),
+            id="both-nan",
+        ),
+        pytest.param(
+            1,
+            1,
+            4,
+            BinaryPrecisionResult(precision=0.5, num_predictions=4, num_positive_predictions=2),
+            id="half-precision",
+        ),
+        pytest.param(
+            10,
+            10,
+            100,
+            BinaryPrecisionResult(precision=0.5, num_predictions=100, num_positive_predictions=20),
+            id="large-counts",
+        ),
+    ],
+)
+def test_binary_precision_result_from_tp_fp(
+    true_positives: float,
+    false_positives: float,
+    num_predictions: int,
+    expected: BinaryPrecisionResult,
+) -> None:
+    assert BinaryPrecisionResult.from_tp_fp(
+        true_positives=true_positives,
+        false_positives=false_positives,
+        num_predictions=num_predictions,
+    ).allclose(expected, equal_nan=True)
+
+
+########################################
+#     Tests for compute_precision      #
+########################################
+
+
+@pytest.mark.parametrize(
+    ("true_positives", "false_positives", "expected"),
+    [
+        pytest.param(3, 1, 0.75, id="standard"),
+        pytest.param(5, 0, 1.0, id="no-false-positives"),
+        pytest.param(0, 5, 0.0, id="no-true-positives"),
+        pytest.param(1, 1, 0.5, id="equal-tp-fp"),
+    ],
+)
+def test_compute_precision(
+    true_positives: float,
+    false_positives: float,
+    expected: float,
+) -> None:
+    assert compute_precision(true_positives, false_positives) == expected
+
+
+def test_compute_precision_zero_denominator() -> None:
+    assert compute_precision(true_positives=0, false_positives=0) == 0.0
+
+
+@pytest.mark.parametrize(
+    ("true_positives", "false_positives"),
+    [
+        pytest.param(float("nan"), 1, id="nan-tp"),
+        pytest.param(3, float("nan"), id="nan-fp"),
+        pytest.param(float("nan"), float("nan"), id="nan-all"),
+    ],
+)
+def test_compute_precision_nan(
+    true_positives: float,
+    false_positives: float,
+) -> None:
+    assert math.isnan(compute_precision(true_positives, false_positives))
