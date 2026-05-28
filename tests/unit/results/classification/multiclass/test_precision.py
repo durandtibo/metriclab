@@ -422,15 +422,15 @@ def test_multiclass_precision_result_to_display_full(
     result: MulticlassPrecisionResult,
 ) -> None:
     assert result.to_display() == (
-        "Precision (n=300)\n"
+        "Precision  [n=300]\n"
         "----------------------------------------------------\n"
         "Macro       [██████████████░░░░░░]  0.7000\n"
         "Micro       [██████████████░░░░░░]  0.7200\n"
         "Weighted    [██████████████░░░░░░]  0.7100\n"
         "\nPer class:\n"
-        "  class 0   [████████████████░░░░]  0.8000  (n=100)\n"
-        "  class 1   [████████████░░░░░░░░]  0.6000  (n=50)\n"
-        "  class 2   [██████████████░░░░░░]  0.7000  (n=150)"
+        "  class 0   [████████████████░░░░]  0.8000  [n=100]\n"
+        "  class 1   [████████████░░░░░░░░]  0.6000  [n=50]\n"
+        "  class 2   [██████████████░░░░░░]  0.7000  [n=150]"
     )
 
 
@@ -444,14 +444,14 @@ def test_multiclass_precision_result_to_display_nan() -> None:
         num_predictions=10,
     )
     assert m.to_display() == (
-        "Precision (n=10)\n"
+        "Precision  [n=10]\n"
         "----------------------------------------------------\n"
         "Macro       [????????????????????]  nan\n"
         "Micro       [????????????????????]  nan\n"
         "Weighted    [????????????????????]  nan\n"
         "\nPer class:\n"
-        "  class 0   [????????????????????]  nan  (n=0)\n"
-        "  class 1   [????????????????????]  nan  (n=0)"
+        "  class 0   [????????????????????]  nan  [n=0]\n"
+        "  class 1   [????????????????????]  nan  [n=0]"
     )
 
 
@@ -465,14 +465,14 @@ def test_multiclass_precision_result_to_display_perfect() -> None:
         num_predictions=100,
     )
     assert m.to_display() == (
-        "Precision (n=100)\n"
+        "Precision  [n=100]\n"
         "----------------------------------------------------\n"
         "Macro       [████████████████████]  1.0000\n"
         "Micro       [████████████████████]  1.0000\n"
         "Weighted    [████████████████████]  1.0000\n"
         "\nPer class:\n"
-        "  class 0   [████████████████████]  1.0000  (n=50)\n"
-        "  class 1   [████████████████████]  1.0000  (n=50)"
+        "  class 0   [████████████████████]  1.0000  [n=50]\n"
+        "  class 1   [████████████████████]  1.0000  [n=50]"
     )
 
 

@@ -65,6 +65,16 @@ class MulticlassPrecisionResult(BaseResult):
         {'macro_precision': 0.7, 'micro_precision': 0.72,
          'weighted_precision': 0.71, 'per_class_precision': [0.8, 0.6, 0.7],
          'support': [100, 50, 150], 'num_predictions': 300}
+        >>> print(m.to_display())
+        Precision  [n=300]
+        ----------------------------------------------------
+        Macro       [██████████████░░░░░░]  0.7000
+        Micro       [██████████████░░░░░░]  0.7200
+        Weighted    [██████████████░░░░░░]  0.7100
+        Per class:
+          class 0   [████████████████░░░░]  0.8000  [n=100]
+          class 1   [████████████░░░░░░░░]  0.6000  [n=50]
+          class 2   [██████████████░░░░░░]  0.7000  [n=150]
 
         ```
     """
@@ -135,7 +145,7 @@ class MulticlassPrecisionResult(BaseResult):
         if self.num_predictions == 0:
             return f"{self.__class__.__qualname__}: no predictions"
         return (
-            f"Precision (n={self.num_predictions:,})\n{'-' * 52}\n"
+            f"Precision  [n={self.num_predictions:,}]\n{'-' * 52}\n"
             + _precision_row("Macro", self.macro_precision)
             + _precision_row("Micro", self.micro_precision)
             + _precision_row("Weighted", self.weighted_precision)
@@ -160,5 +170,5 @@ def _precision_row(label: str, score: float, support: int | None = None) -> str:
     """
     bar = make_robust_bar(score, length=20)
     score_str = "nan" if math.isnan(score) else f"{score:.4f}"
-    support_str = f"  (n={support:,})" if support is not None else ""
+    support_str = f"  [n={support:,}]" if support is not None else ""
     return f"{label:<12}{bar}  {score_str}{support_str}\n"
