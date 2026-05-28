@@ -1,1 +1,6 @@
-r"""Classification with one positive class."""
+r"""Result objects for binary classification metrics.
+
+This sub-package contains result containers for binary classification
+tasks where each sample is assigned to exactly one of two classes
+(positive or negative).
+"""
