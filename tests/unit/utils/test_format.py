@@ -86,7 +86,7 @@ def test_make_robust_bar_nan_ends_with_bracket() -> None:
     ],
 )
 def test_make_robust_bar_invalid_length_raises(length: int) -> None:
-    with pytest.raises(ValueError, match="length must be a positive integer"):
+    with pytest.raises(ValueError, match=r"length must be a positive integer"):
         make_robust_bar(0.5, length=length)
 
 
@@ -100,7 +100,7 @@ def test_make_robust_bar_invalid_length_raises(length: int) -> None:
     ],
 )
 def test_make_robust_bar_out_of_range_raises(value: float) -> None:
-    with pytest.raises(ValueError, match="value must be in"):
+    with pytest.raises(ValueError, match=r"value must be in"):
         make_robust_bar(value)
 
 

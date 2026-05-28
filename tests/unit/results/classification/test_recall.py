@@ -59,12 +59,12 @@ def test_recall_result_zero_true_positives() -> None:
 
 
 def test_recall_result_negative_true_positives_raises() -> None:
-    with pytest.raises(ValueError, match="true_positives must be >= 0"):
+    with pytest.raises(ValueError, match=r"true_positives must be >= 0"):
         RecallResult(true_positives=-1, false_negatives=2)
 
 
 def test_recall_result_negative_false_negatives_raises() -> None:
-    with pytest.raises(ValueError, match="false_negatives must be >= 0"):
+    with pytest.raises(ValueError, match=r"false_negatives must be >= 0"):
         RecallResult(true_positives=3, false_negatives=-1)
 
 

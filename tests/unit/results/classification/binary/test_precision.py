@@ -35,7 +35,7 @@ def test_binary_precision_result_nan_precision() -> None:
 
 def test_binary_precision_result_frozen() -> None:
     m = BinaryPrecisionResult(precision=0.75, num_predictions=10)
-    with pytest.raises(FrozenInstanceError, match="cannot assign to field 'precision'"):
+    with pytest.raises(FrozenInstanceError, match=r"cannot assign to field 'precision'"):
         m.precision = 0.5
 
 
@@ -53,12 +53,12 @@ def test_binary_precision_result_zero_precision() -> None:
 
 
 def test_binary_precision_result_negative_num_predictions_raises() -> None:
-    with pytest.raises(ValueError, match="num_predictions must be >= 0"):
+    with pytest.raises(ValueError, match=r"num_predictions must be >= 0"):
         BinaryPrecisionResult(precision=0.75, num_predictions=-1)
 
 
 def test_binary_precision_result_negative_precision_raises() -> None:
-    with pytest.raises(ValueError, match="precision must be >= 0"):
+    with pytest.raises(ValueError, match=r"precision must be >= 0"):
         BinaryPrecisionResult(precision=-0.1, num_predictions=10)
 
 

@@ -58,31 +58,31 @@ def resolve_fill_value(
     """Return the fill value for undefined metric entries.
 
     Args:
-            undefined_mask: A 1-D boolean array where ``True`` indicates
-                that the metric is undefined for the corresponding class.
-            undefined_policy: Controls the behaviour when undefined entries
-                are detected. See :class:`UndefinedPolicy` for accepted
-                values.
+        undefined_mask: A 1-D boolean array where ``True`` indicates
+            that the metric is undefined for the corresponding class.
+        undefined_policy: Controls the behaviour when undefined entries
+            are detected. See :class:`UndefinedPolicy` for accepted
+            values.
 
     Returns:
-            The fill value to substitute for undefined entries. Returns
-                ``0.0`` immediately when no entries are undefined.
+        The fill value to substitute for undefined entries. Returns
+            ``0.0`` immediately when no entries are undefined.
 
     Raises:
-            ValueError: if ``undefined_policy='raise'`` and at least one
-                entry is undefined.
+        ValueError: if ``undefined_policy='raise'`` and at least one
+            entry is undefined.
 
     Example:
-    ```pycon
-    >>> import numpy as np
-    >>> from metriclab.utils.undefined import resolve_fill_value
-    >>> resolve_fill_value(
-    ...     undefined_mask=np.array([True, False, True, False]),
-    ...     undefined_policy=0.0,
-    ... )
-    0.0
+        ```pycon
+        >>> import numpy as np
+        >>> from metriclab.utils.undefined import resolve_fill_value
+        >>> resolve_fill_value(
+        ...     undefined_mask=np.array([True, False, True, False]),
+        ...     undefined_policy=0.0,
+        ... )
+        0.0
 
-    ```
+        ```
     """
     if not undefined_mask.any():
         return 0.0  # fill is irrelevant; no undefined entries

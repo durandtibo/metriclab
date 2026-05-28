@@ -34,7 +34,7 @@ def test_balanced_accuracy_result_nan_balanced_accuracy() -> None:
 
 def test_balanced_accuracy_result_frozen() -> None:
     m = BalancedAccuracyResult(balanced_accuracy=0.7, num_predictions=10)
-    with pytest.raises(FrozenInstanceError, match="cannot assign to field 'num_predictions'"):
+    with pytest.raises(FrozenInstanceError, match=r"cannot assign to field 'num_predictions'"):
         m.num_predictions = 11
 
 
@@ -42,12 +42,12 @@ def test_balanced_accuracy_result_frozen() -> None:
 
 
 def test_balanced_accuracy_result_negative_num_predictions_raises() -> None:
-    with pytest.raises(ValueError, match="num_predictions must be >= 0"):
+    with pytest.raises(ValueError, match=r"num_predictions must be >= 0"):
         BalancedAccuracyResult(balanced_accuracy=0.7, num_predictions=-1)
 
 
 def test_balanced_accuracy_result_negative_balanced_accuracy_raises() -> None:
-    with pytest.raises(ValueError, match="balanced_accuracy must be >= 0"):
+    with pytest.raises(ValueError, match=r"balanced_accuracy must be >= 0"):
         BalancedAccuracyResult(balanced_accuracy=-0.1, num_predictions=10)
 
 

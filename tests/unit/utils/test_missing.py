@@ -15,5 +15,5 @@ def test_validate_missing_policy_valid(missing_policy: str) -> None:
 
 
 def test_validate_missing_policy_incorrect() -> None:
-    with pytest.raises(ValueError, match="Incorrect 'missing_policy': incorrect"):
+    with pytest.raises(ValueError, match=r"Incorrect 'missing_policy': incorrect"):
         validate_missing_policy("incorrect")

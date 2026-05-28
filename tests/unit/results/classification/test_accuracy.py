@@ -26,22 +26,22 @@ def test_accuracy_result_num_predictions() -> None:
 
 def test_accuracy_result_is_frozen() -> None:
     result = AccuracyResult(num_correct_predictions=7, num_predictions=10)
-    with pytest.raises(FrozenInstanceError, match="cannot assign to field 'num_predictions'"):
+    with pytest.raises(FrozenInstanceError, match=r"cannot assign to field 'num_predictions'"):
         result.num_predictions = 5
 
 
 def test_accuracy_result_invalid_num_predictions_negative() -> None:
-    with pytest.raises(ValueError, match="num_predictions"):
+    with pytest.raises(ValueError, match=r"num_predictions"):
         AccuracyResult(num_correct_predictions=0, num_predictions=-1)
 
 
 def test_accuracy_result_invalid_num_correct_predictions_negative() -> None:
-    with pytest.raises(ValueError, match="num_correct_predictions"):
+    with pytest.raises(ValueError, match=r"num_correct_predictions"):
         AccuracyResult(num_correct_predictions=-1, num_predictions=10)
 
 
 def test_accuracy_result_invalid_num_correct_predictions_exceeds_num_predictions() -> None:
-    with pytest.raises(ValueError, match="num_correct_predictions"):
+    with pytest.raises(ValueError, match=r"num_correct_predictions"):
         AccuracyResult(num_correct_predictions=11, num_predictions=10)
 
 
@@ -305,7 +305,7 @@ def test_accuracy_result_combine_returns_new_object() -> None:
 
 def test_accuracy_result_combine_incorrect_object() -> None:
     result = AccuracyResult(num_correct_predictions=7, num_predictions=10)
-    with pytest.raises(TypeError, match="Cannot combine AccuracyResult with"):
+    with pytest.raises(TypeError, match=r"Cannot combine AccuracyResult with"):
         result.combine({"num_correct_predictions": 0, "num_predictions": 0})
 
 

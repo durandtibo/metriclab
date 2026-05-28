@@ -41,7 +41,7 @@ def test_precision_result_nan_false_positives() -> None:
 
 def test_precision_result_frozen() -> None:
     m = PrecisionResult(true_positives=3, false_positives=1)
-    with pytest.raises(FrozenInstanceError, match="cannot assign to field 'true_positives'"):
+    with pytest.raises(FrozenInstanceError, match=r"cannot assign to field 'true_positives'"):
         m.true_positives = 2
 
 
@@ -59,12 +59,12 @@ def test_precision_result_zero_true_positives() -> None:
 
 
 def test_precision_result_negative_true_positives_raises() -> None:
-    with pytest.raises(ValueError, match="true_positives must be >= 0"):
+    with pytest.raises(ValueError, match=r"true_positives must be >= 0"):
         PrecisionResult(true_positives=-1, false_positives=1)
 
 
 def test_precision_result_negative_false_positives_raises() -> None:
-    with pytest.raises(ValueError, match="false_positives must be >= 0"):
+    with pytest.raises(ValueError, match=r"false_positives must be >= 0"):
         PrecisionResult(true_positives=3, false_positives=-1)
 
 

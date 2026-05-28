@@ -70,7 +70,7 @@ def test_multiclass_precision_result_nan_precisions() -> None:
 
 
 def test_multiclass_precision_result_frozen(result: MulticlassPrecisionResult) -> None:
-    with pytest.raises(FrozenInstanceError, match="cannot assign to field 'macro_precision'"):
+    with pytest.raises(FrozenInstanceError, match=r"cannot assign to field 'macro_precision'"):
         result.macro_precision = 0.5
 
 
@@ -90,7 +90,7 @@ def test_multiclass_precision_result_single_class() -> None:
 
 
 def test_multiclass_precision_result_negative_num_predictions_raises() -> None:
-    with pytest.raises(ValueError, match="num_predictions must be >= 0"):
+    with pytest.raises(ValueError, match=r"num_predictions must be >= 0"):
         MulticlassPrecisionResult(
             macro_precision=0.7,
             micro_precision=0.72,
@@ -125,7 +125,7 @@ def test_multiclass_precision_result_negative_precision_raises(
 
 def test_multiclass_precision_result_mismatched_shapes_raises() -> None:
     with pytest.raises(
-        ValueError, match="per_class_precision and support must have the same shape"
+        ValueError, match=r"per_class_precision and support must have the same shape"
     ):
         MulticlassPrecisionResult(
             macro_precision=0.7,
