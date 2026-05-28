@@ -25,36 +25,53 @@ class BinaryPrecisionResult(BaseResult):
         precision: The precision score, in ``[0, 1]``, or ``nan`` if
             it could not be computed.
         num_predictions: The total number of predictions.
+        num_positive_predictions: The number of predictions where the
+            predicted label is the positive class (i.e. ``TP + FP``).
 
     Raises:
         ValueError: if ``num_predictions`` is negative.
+        ValueError: if ``num_positive_predictions`` is negative.
+        ValueError: if ``num_positive_predictions`` is greater than
+            ``num_predictions``.
         ValueError: if ``precision`` is negative and not ``nan``.
 
     Example:
         ```pycon
         >>> from metriclab.results import BinaryPrecisionResult
-        >>> m = BinaryPrecisionResult(precision=0.75, num_predictions=10)
+        >>> m = BinaryPrecisionResult(
+        ...     precision=0.75, num_predictions=10, num_positive_predictions=4
+        ... )
         >>> m
-        BinaryPrecisionResult(precision=0.75, num_predictions=10)
+        BinaryPrecisionResult(precision=0.75, num_predictions=10, num_positive_predictions=4)
         >>> m.precision
         0.75
         >>> m.to_dict()
-        {'precision': 0.75, 'num_predictions': 10}
+        {'precision': 0.75, 'num_predictions': 10, 'num_positive_predictions': 4}
         >>> print(m.to_display())
-        Precision [███████████████░░░░░]  0.7500
+        Precision [███████████████░░░░░]  0.7500  (3/4)  [n=10]
 
         ```
     """
 
     precision: float
     num_predictions: int
+    num_positive_predictions: int | float = 0
 
     def __post_init__(self) -> None:
         if self.num_predictions < 0:
-            msg = f"num_predictions must be >= 0, got {self.num_predictions}"
+            msg = f"'num_predictions' must be >= 0, got {self.num_predictions}"
+            raise ValueError(msg)
+        if self.num_positive_predictions < 0:
+            msg = f"'num_positive_predictions' must be >= 0, got {self.num_positive_predictions}"
+            raise ValueError(msg)
+        if self.num_positive_predictions > self.num_predictions:
+            msg = (
+                f"'num_positive_predictions' ({self.num_positive_predictions}) "
+                f"must be <= 'num_predictions' ({self.num_predictions})"
+            )
             raise ValueError(msg)
         if not math.isnan(self.precision) and self.precision < 0:
-            msg = f"precision must be >= 0, got {self.precision}"
+            msg = f"'precision' must be >= 0, got {self.precision}"
             raise ValueError(msg)
 
     def allclose(
@@ -84,6 +101,7 @@ class BinaryPrecisionResult(BaseResult):
         return {
             f"{prefix}precision{suffix}": self.precision,
             f"{prefix}num_predictions{suffix}": self.num_predictions,
+            f"{prefix}num_positive_predictions{suffix}": self.num_positive_predictions,
         }
 
     def to_display(self) -> str:
@@ -91,5 +109,11 @@ class BinaryPrecisionResult(BaseResult):
             return f"{self.__class__.__qualname__}: no predictions"
         score = self.precision
         bar = make_robust_bar(score, length=20)
-        score_str = "nan" if math.isnan(score) else f"{score:.4f}"
+        if math.isnan(score):
+            score_str = f"nan  [n={self.num_predictions}]"
+        else:
+            tp = round(score * self.num_positive_predictions)
+            score_str = (
+                f"{score:.4f}  ({tp}/{self.num_positive_predictions})  [n={self.num_predictions}]"
+            )
         return f"Precision {bar}  {score_str}"
