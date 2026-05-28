@@ -261,35 +261,29 @@ def test_recall_result_from_recall(
     expected_fn: int,
 ) -> None:
     m = RecallResult.from_recall(recall=recall, num_actual_positives=num_actual_positives)
-    assert m.true_positives == expected_tp
-    assert m.false_negatives == expected_fn
+    assert m.equal(
+        RecallResult(true_positives=expected_tp, false_negatives=expected_fn), equal_nan=True
+    )
     assert m.num_actual_positives == num_actual_positives
 
 
 def test_recall_result_from_recall_nan_recall() -> None:
     m = RecallResult.from_recall(recall=float("nan"), num_actual_positives=5)
-    assert math.isnan(m.true_positives)
-    assert math.isnan(m.false_negatives)
+    assert m.equal(
+        RecallResult(true_positives=float("nan"), false_negatives=float("nan")), equal_nan=True
+    )
 
 
 def test_recall_result_from_recall_nan_num_actual_positives() -> None:
     m = RecallResult.from_recall(recall=0.6, num_actual_positives=float("nan"))
-    assert math.isnan(m.true_positives)
-    assert math.isnan(m.false_negatives)
+    assert m.equal(
+        RecallResult(true_positives=float("nan"), false_negatives=float("nan")), equal_nan=True
+    )
 
 
 def test_recall_result_from_recall_zero_denominator() -> None:
     m = RecallResult.from_recall(recall=0.0, num_actual_positives=0)
-    assert m.true_positives == 0
-    assert m.false_negatives == 0
-    assert m.num_actual_positives == 0
-
-
-def test_recall_result_from_recall_returns_instance() -> None:
-    assert isinstance(
-        RecallResult.from_recall(recall=0.6, num_actual_positives=5),
-        RecallResult,
-    )
+    assert m.equal(RecallResult(true_positives=0, false_negatives=0))
 
 
 def test_recall_result_from_recall_roundtrip() -> None:
