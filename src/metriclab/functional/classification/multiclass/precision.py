@@ -8,7 +8,6 @@ from __future__ import annotations
 
 __all__ = ["multiclass_precision"]
 
-import warnings
 from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
@@ -23,7 +22,7 @@ from metriclab.utils.array import (
     to_numpy_1d,
 )
 from metriclab.utils.sentinel import NOT_SET
-from metriclab.utils.undefined import validate_undefined_policy
+from metriclab.utils.undefined import resolve_fill_value, validate_undefined_policy
 
 if TYPE_CHECKING:
     from metriclab.typing import ArrayLike
@@ -259,7 +258,7 @@ def compute_multiclass_precision(
         )
 
     cm = confusion_matrix(y_true=y_true, y_pred=y_pred)
-    labels = np.unique(np.concatenate([y_true, y_pred]))
+    np.unique(np.concatenate([y_true, y_pred]))
 
     true_positives = np.diag(cm)
     positive_predictions = cm.sum(axis=0)  # TP + FP per class
@@ -267,12 +266,7 @@ def compute_multiclass_precision(
 
     undefined_mask = positive_predictions == 0
 
-    fill = _resolve_fill_value(
-        undefined_mask=undefined_mask,
-        labels=labels,
-        undefined_policy=undefined_policy,
-    )
-
+    fill = resolve_fill_value(undefined_mask=undefined_mask, undefined_policy=undefined_policy)
     per_class = np.where(
         ~undefined_mask,
         true_positives / np.where(undefined_mask, 1, positive_predictions),
@@ -301,36 +295,3 @@ def compute_multiclass_precision(
         weighted_precision=weighted,
         num_predictions=y_true.size,
     )
-
-
-def _resolve_fill_value(
-    *,
-    undefined_mask: np.ndarray,
-    labels: np.ndarray,
-    undefined_policy: UndefinedPrecisionValue,
-) -> float:
-    """Return the fill value for undefined per-class precision entries.
-
-    Emits a ``UserWarning`` when ``undefined_policy='warn'`` and at
-    least one class has no positive predictions.
-    """
-    if not undefined_mask.any():
-        return 0.0  # fill is irrelevant; no undefined classes
-
-    if undefined_policy == "nan":
-        return float("nan")
-
-    if undefined_policy == "warn":
-        affected = labels[undefined_mask].tolist()
-        warnings.warn(
-            f"Precision is undefined for {len(affected)} class(es) with no positive "
-            f"predictions: {affected}. Substituting 0.0. Pass "
-            "'undefined_policy=0.0' to silence this warning, or "
-            "'undefined_policy=float(\"nan\")' to propagate NaN instead.",
-            UserWarning,
-            stacklevel=4,
-        )
-        return 0.0
-
-    # Covers float values including float('nan') passed directly.
-    return float(undefined_policy)
