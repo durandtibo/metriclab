@@ -8,7 +8,7 @@ from __future__ import annotations
 
 __all__ = ["multiclass_precision"]
 
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from sklearn.metrics import confusion_matrix
@@ -22,17 +22,15 @@ from metriclab.utils.array import (
     to_numpy_1d,
 )
 from metriclab.utils.sentinel import NOT_SET
-from metriclab.utils.undefined import resolve_fill_value, validate_undefined_policy
+from metriclab.utils.undefined import (
+    UndefinedPolicy,
+    resolve_fill_value,
+    validate_undefined_policy,
+)
 
 if TYPE_CHECKING:
     from metriclab.typing import ArrayLike
     from metriclab.utils.missing import MissingPolicy
-
-
-# Precision is undefined for a class when no samples were predicted as
-# that class (i.e. TP + FP = 0). This type controls what value to
-# substitute in that case.
-UndefinedPrecisionValue = float | Literal["nan", "warn"]
 
 
 def multiclass_precision(
@@ -42,7 +40,7 @@ def multiclass_precision(
     missing_policy: MissingPolicy = "propagate",
     missing_values: Any = NOT_SET,
     raise_empty: bool = True,
-    undefined_policy: UndefinedPrecisionValue = "warn",
+    undefined_policy: UndefinedPolicy = "warn",
 ) -> MulticlassPrecisionResult:
     r"""Compute the multiclass precision score.
 
@@ -193,7 +191,7 @@ def compute_multiclass_precision(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     *,
-    undefined_policy: UndefinedPrecisionValue = "warn",
+    undefined_policy: UndefinedPolicy = "warn",
 ) -> MulticlassPrecisionResult:
     r"""Compute multiclass precision metrics from true and predicted
     labels.
