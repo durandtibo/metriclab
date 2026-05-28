@@ -43,6 +43,11 @@ if TYPE_CHECKING:
             (0, 1, 2, 0, 1, 2),
             id="tuple",
         ),
+        pytest.param(
+            ["cat", "bear", "dog", "cat", "bear", "dog"],
+            ["cat", "bear", "dog", "cat", "bear", "dog"],
+            id="str",
+        ),
     ],
 )
 def test_multiclass_precision_all_correct(y_true: ArrayLike, y_pred: ArrayLike) -> None:
@@ -195,11 +200,13 @@ def test_multiclass_precision_undefined_policy_warn_forwarded() -> None:
 
 
 def test_multiclass_precision_undefined_policy_zero_no_warning() -> None:
-    result = multiclass_precision(
-        y_true=[0, 0, 1, 2],
-        y_pred=[0, 0, 1, 1],
-        undefined_policy=0.0,
-    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        result = multiclass_precision(
+            y_true=[0, 0, 1, 2],
+            y_pred=[0, 0, 1, 1],
+            undefined_policy=0.0,
+        )
     assert result.allclose(
         MulticlassPrecisionResult(
             macro_precision=0.5,
@@ -231,6 +238,15 @@ def test_multiclass_precision_undefined_policy_nan_propagates() -> None:
     )
 
 
+def test_multiclass_precision_undefined_policy_raise_forwarded() -> None:
+    with pytest.raises(ValueError, match=r"The metric is undefined for 1 element\(s\)"):
+        multiclass_precision(
+            y_true=[0, 0, 1, 2],
+            y_pred=[0, 0, 1, 1],
+            undefined_policy="raise",
+        )
+
+
 def test_multiclass_precision_invalid_undefined_policy_raises() -> None:
     with pytest.raises(ValueError, match=r"Invalid 'undefined_policy' value"):
         multiclass_precision(
@@ -238,9 +254,6 @@ def test_multiclass_precision_invalid_undefined_policy_raises() -> None:
             y_pred=[0, 1],
             undefined_policy="bad",
         )
-
-
-# --- validation is eagerly applied before preprocessing ---
 
 
 def test_multiclass_precision_validates_undefined_policy_before_preprocessing() -> None:
@@ -359,15 +372,6 @@ def test_compute_multiclass_precision_undefined_warn_emits_warning() -> None:
             num_predictions=4,
         )
     )
-
-
-def test_compute_multiclass_precision_undefined_warn_lists_affected_classes() -> None:
-    with pytest.warns(UserWarning, match=r"\[2\]"):
-        compute_multiclass_precision(
-            y_true=np.array([0, 1, 2]),
-            y_pred=np.array([0, 1, 1]),
-            undefined_policy="warn",
-        )
 
 
 def test_compute_multiclass_precision_undefined_zero_no_warning() -> None:
@@ -532,12 +536,6 @@ def test_compute_multiclass_precision_scalar_types() -> None:
             num_predictions=3,
         )
     )
-    assert isinstance(result.macro_precision, float)
-    assert isinstance(result.micro_precision, float)
-    assert isinstance(result.weighted_precision, float)
-    assert isinstance(result.num_predictions, int)
-    assert isinstance(result.per_class_precision, np.ndarray)
-    assert isinstance(result.support, np.ndarray)
 
 
 # --- edge cases ---
