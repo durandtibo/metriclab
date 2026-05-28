@@ -27,10 +27,9 @@ class ResultDict(BaseResult):
             instances. Each key typically identifies a dataset split or
             evaluation phase (e.g. ``"train"``, ``"val"``).
 
-    Note:
-        :meth:`to_markdown` renders one top-level bullet per key and
-        nests the child result markdown underneath it. Empty mappings
-        return ``"_No results available._"``.
+    ``to_display`` renders each result under a ``=== key ===`` heading,
+    with a blank line between entries. An empty mapping produces an
+    empty string.
 
     Example:
         ```pycon
@@ -41,8 +40,10 @@ class ResultDict(BaseResult):
         >>> print(result.to_display())
         === train ===
         {'loss': 0.5}
+        <BLANKLINE>
         === val ===
         {'loss': 0.3}
+        <BLANKLINE>
 
         ```
     """

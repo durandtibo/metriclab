@@ -19,9 +19,10 @@ class Result(BaseResult):
     Args:
         results: A dictionary containing metric names and values.
 
-    The inherited ``to_dict`` method returns ``results`` unchanged unless a
-    prefix or suffix is provided. The inherited ``to_display`` method renders
-    the exported dictionary with :class:`str`.
+    ``to_dict`` returns the same key-value pairs as ``results`` when
+    no prefix or suffix is provided; keys are prefixed and suffixed
+    otherwise. ``to_display`` renders the exported dictionary with
+    :class:`str`.
 
     Example:
         ```pycon
@@ -29,8 +30,8 @@ class Result(BaseResult):
         >>> result = Result({"accuracy": 0.8, "loss": 0.2})
         >>> result.to_dict(suffix="_metric")
         {'accuracy_metric': 0.8, 'loss_metric': 0.2}
-        >>> result.to_display()
-        "{'accuracy': 0.8, 'loss': 0.2}"
+        >>> print(result.to_display())
+        {'accuracy': 0.8, 'loss': 0.2}
 
         ```
     """

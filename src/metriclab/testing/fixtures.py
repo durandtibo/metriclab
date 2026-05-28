@@ -22,12 +22,19 @@ from metriclab.utils.imports import (
 colorlog_available: pytest.MarkDecorator = pytest.mark.skipif(
     not is_colorlog_available(), reason="Requires colorlog"
 )
+"""Skip the test if the ``colorlog`` package is not installed."""
+
 colorlog_not_available: pytest.MarkDecorator = pytest.mark.skipif(
     is_colorlog_available(), reason="Skip if colorlog is available"
 )
+"""Skip the test if the ``colorlog`` package is installed."""
+
 rich_available: pytest.MarkDecorator = pytest.mark.skipif(
     not is_rich_available(), reason="Requires rich"
 )
+"""Skip the test if the ``rich`` package is not installed."""
+
 rich_not_available: pytest.MarkDecorator = pytest.mark.skipif(
     is_rich_available(), reason="Skip if rich is available"
 )
+"""Skip the test if the ``rich`` package is installed."""

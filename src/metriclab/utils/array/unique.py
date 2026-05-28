@@ -66,9 +66,9 @@ def multi_count_unique_non_missing(
 ) -> int:
     r"""Count the number of unique non-missing values across all arrays.
 
-        Counts unique values across all input arrays combined, as if all
-        arrays were concatenated into one. Works correctly with special
-        values such as ``nan``, ``inf``, and ``None``.
+    Counts unique values across all input arrays combined, as if all
+    arrays were concatenated into one. Works correctly with special
+    values such as ``nan``, ``inf``, and ``None``.
 
     Args:
         arrays: The input arrays to search.
@@ -82,23 +82,23 @@ def multi_count_unique_non_missing(
             empty.
 
     Example:
-    ```pycon
-    >>> import numpy as np
-    >>> from metriclab.utils.array import multi_count_unique_non_missing
-    >>> # two arrays with overlapping values
-    >>> multi_count_unique_non_missing([np.array([1, 0, 2]), np.array([2, 3, 0])])
-    4
-    >>> # nan excluded when missing_values=float("nan")
-    >>> multi_count_unique_non_missing(
-    ...     [np.array([1.0, float("nan")]), np.array([2.0, float("nan")])],
-    ...     missing_values=float("nan"),
-    ... )
-    2
-    >>> # empty list of arrays
-    >>> multi_count_unique_non_missing([])
-    0
+        ```pycon
+        >>> import numpy as np
+        >>> from metriclab.utils.array import multi_count_unique_non_missing
+        >>> # two arrays with overlapping values
+        >>> multi_count_unique_non_missing([np.array([1, 0, 2]), np.array([2, 3, 0])])
+        4
+        >>> # nan excluded when missing_values=float("nan")
+        >>> multi_count_unique_non_missing(
+        ...     [np.array([1.0, float("nan")]), np.array([2.0, float("nan")])],
+        ...     missing_values=float("nan"),
+        ... )
+        2
+        >>> # empty list of arrays
+        >>> multi_count_unique_non_missing([])
+        0
 
-    ```
+        ```
     """
     if not arrays:
         return 0
