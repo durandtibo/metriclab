@@ -6,12 +6,14 @@ from sklearn.metrics import precision_recall_fscore_support, precision_score
 
 from metriclab.functional import multiclass_precision
 from metriclab.results import MulticlassPrecisionResult
+from tests.conftest import ignore_single_label_warning
 
 ##############################################
 #   Tests aligning with scikit-learn metric  #
 ##############################################
 
 
+@ignore_single_label_warning
 @pytest.mark.parametrize(
     ("y_true", "y_pred"),
     [
@@ -77,18 +79,16 @@ from metriclab.results import MulticlassPrecisionResult
         ),
     ],
 )
-@pytest.mark.parametrize("undefined_precision", [0.0, 1.0])
+@pytest.mark.parametrize("undefined_policy", [0.0, 1.0])
 def test_multiclass_precision_against_sklearn(
-    y_true: np.ndarray, y_pred: np.ndarray, undefined_precision: float
+    y_true: np.ndarray, y_pred: np.ndarray, undefined_policy: float
 ) -> None:
     # 1. Dynamically compute the baseline averages using sklearn
-    macro_p = precision_score(y_true, y_pred, average="macro", zero_division=undefined_precision)
-    micro_p = precision_score(y_true, y_pred, average="micro", zero_division=undefined_precision)
-    weighted_p = precision_score(
-        y_true, y_pred, average="weighted", zero_division=undefined_precision
-    )
+    macro_p = precision_score(y_true, y_pred, average="macro", zero_division=undefined_policy)
+    micro_p = precision_score(y_true, y_pred, average="micro", zero_division=undefined_policy)
+    weighted_p = precision_score(y_true, y_pred, average="weighted", zero_division=undefined_policy)
     per_class_p, _, _, expected_support = precision_recall_fscore_support(
-        y_true, y_pred, average=None, zero_division=undefined_precision
+        y_true, y_pred, average=None, zero_division=undefined_policy
     )
 
     expected_result = MulticlassPrecisionResult(
@@ -101,7 +101,5 @@ def test_multiclass_precision_against_sklearn(
     )
 
     # 2. Assert full structural and mathematical equality
-    result = multiclass_precision(
-        y_true=y_true, y_pred=y_pred, undefined_precision=undefined_precision
-    )
+    result = multiclass_precision(y_true=y_true, y_pred=y_pred, undefined_policy=undefined_policy)
     assert result.allclose(expected_result, equal_nan=True)
