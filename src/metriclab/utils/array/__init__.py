@@ -9,6 +9,7 @@ __all__ = [
     "contains_nan",
     "contains_value",
     "count_unique_non_missing",
+    "count_values",
     "equal_to",
     "is_nan",
     "multi_contains_value",
@@ -29,6 +30,7 @@ __all__ = [
 ]
 
 from metriclab.utils.array.conversion import to_numpy, to_numpy_1d
+from metriclab.utils.array.counting import count_values
 from metriclab.utils.array.equal import equal_to, multi_equal_to
 from metriclab.utils.array.nan import (
     NAN_POLICIES,
