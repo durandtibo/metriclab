@@ -272,6 +272,12 @@ def test_recall_result_from_recall_nan_recall() -> None:
     assert math.isnan(m.false_negatives)
 
 
+def test_recall_result_from_recall_nan_num_actual_positives() -> None:
+    m = RecallResult.from_recall(recall=0.6, num_actual_positives=float("nan"))
+    assert math.isnan(m.true_positives)
+    assert math.isnan(m.false_negatives)
+
+
 def test_recall_result_from_recall_zero_denominator() -> None:
     m = RecallResult.from_recall(recall=0.0, num_actual_positives=0)
     assert m.true_positives == 0
