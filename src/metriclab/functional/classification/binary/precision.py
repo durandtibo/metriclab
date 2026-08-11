@@ -1,7 +1,7 @@
 r"""Compute binary classification precision from array-like inputs.
 
-This module powers :func:`metriclab.functional.binary_precision` and supports
-NumPy arrays, and Python sequences.
+This module powers :func:`metriclab.functional.binary_precision` and
+supports NumPy arrays, and Python sequences.
 """
 
 from __future__ import annotations
